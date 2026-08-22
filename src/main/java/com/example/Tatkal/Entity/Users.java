@@ -1,0 +1,43 @@
+package com.example.Tatkal.Entity;
+
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.Table;
+import java.time.OffsetDateTime;
+import java.util.HashSet;
+import java.util.Set;
+import lombok.Getter;
+import lombok.Setter;
+
+
+@Entity
+@Table(name = "Userses")
+@Getter
+@Setter
+public class Users {
+
+    @Id
+    @Column(nullable = false, updatable = false)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @Column(nullable = false, columnDefinition = "longtext")
+    private String name;
+
+    @Column(nullable = false, columnDefinition = "longtext")
+    private String email;
+
+    @Column(nullable = false, columnDefinition = "longtext")
+    private String passwordHash;
+
+    @Column(nullable = false)
+    private OffsetDateTime createdAt;
+
+    @OneToMany(mappedBy = "user")
+    private Set<Booking> userBookings = new HashSet<>();
+
+}

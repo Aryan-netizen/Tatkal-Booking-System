@@ -10,7 +10,10 @@ import jakarta.persistence.Table;
 import java.time.OffsetDateTime;
 import java.util.HashSet;
 import java.util.Set;
+
+import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 
@@ -18,6 +21,8 @@ import lombok.Setter;
 @Table(name = "Userses")
 @Getter
 @Setter
+@AllArgsConstructor
+@NoArgsConstructor
 public class Users {
 
     @Id

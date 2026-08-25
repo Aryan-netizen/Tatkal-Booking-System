@@ -21,7 +21,7 @@ public class StationController {
     }
 
     @GetMapping
-    public ResponseEntity<StationDTO> getAll(
+    public ResponseEntity<List<StationDTO>> getAll(
             @RequestParam(required = false) String search) {
 
         if (search != null && !search.isBlank()) {

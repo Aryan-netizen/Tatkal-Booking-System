@@ -3,6 +3,6 @@ package com.example.Tatkal.Repositry;
 import com.example.Tatkal.Entity.Booking;
 import org.springframework.data.jpa.repository.JpaRepository;
 
-public interface PassengerRepositry extends JpaRepository<Booking,Long> {
-    
+public interface UserRepository extends JpaRepository<Booking,Long> {
+
 }

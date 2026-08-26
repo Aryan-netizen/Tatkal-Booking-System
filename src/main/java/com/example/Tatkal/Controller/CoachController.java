@@ -1,6 +1,7 @@
 package com.example.Tatkal.Controller;
 
 import com.example.Tatkal.Dto.CoachDTO;
+import com.example.Tatkal.Dto.SeatDTO;
 import com.example.Tatkal.Service.CoachService;
 import jakarta.validation.Valid;
 import java.util.List;
@@ -27,17 +28,19 @@ public class CoachController {
         this.coachService = coachService;
     }
 
+
+
     @GetMapping
     public ResponseEntity<List<CoachDTO>> getAllCoaches() {
         return ResponseEntity.ok(coachService.findAll());
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<CoachDTO> getCoach(@PathVariable(name = "id") final Long id) {
-        return ResponseEntity.ok(coachService.get(id));
+    public ResponseEntity<CoachDTO> getCoach(@PathVariable(name = "id") final Long id) throws Exception {
+        return ResponseEntity.ok(coachService.getById(id));
     }
     @GetMapping("/{id}/seats")
-    public ResponseEntity<CoachDTO> getSeats(
+    public ResponseEntity<List<SeatDTO>> getSeats(
             @PathVariable Long id) {
 
         return ResponseEntity.ok(
@@ -46,8 +49,8 @@ public class CoachController {
     }
 
     @PostMapping
-    public ResponseEntity<Long> createCoach(@RequestBody @Valid final CoachDTO coachDTO) {
-        final Long createdId = coachService.create(coachDTO);
+    public ResponseEntity<CoachDTO> createCoach(@RequestBody @Valid final CoachDTO coachDTO) {
+        final CoachDTO createdId = coachService.create(coachDTO);
         return new ResponseEntity<>(createdId, HttpStatus.CREATED);
     }
 

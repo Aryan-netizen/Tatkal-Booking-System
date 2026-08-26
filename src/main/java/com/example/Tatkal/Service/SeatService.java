@@ -34,7 +34,7 @@ public class SeatService {
                 request.getBerthType()
         );
 
-        seat.setStatus(se.AVAILABLE);
+        seat.setStatus(seat.AVAILABLE);
 
         return mapToResponse(
                 seatRepository.save(seat)

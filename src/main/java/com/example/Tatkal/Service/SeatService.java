@@ -1,94 +1,103 @@
 package com.example.Tatkal.Service;
 
-
-import com.example.Tatkal.Dto.SeatDTO;
-import com.example.Tatkal.Entity.Coach;
 import com.example.Tatkal.Entity.Seat;
-import com.example.Tatkal.Repositry.CoachRepository;
 import com.example.Tatkal.Repositry.SeatRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
 public class SeatService {
 
     private final SeatRepository seatRepository;
-    private final CoachRepository coachRepository;
 
-    public SeatDTO create(
-            SeatDTO request
-    ) {
+    @Transactional
+    public Seat create(Seat seat) {
 
-        Coach coach = coachRepository.findById(
-                request.getCoach().getId()
-        ).orElseThrow();
+        if (seat.getStatus() == null) {
+            seat.setStatus("AVAILABLE");
+        }
 
-        Seat seat = new Seat();
-
-        seat.setCoach(coach);
-        seat.setSeatNumber(
-                request.getSeatNumber()
-        );
-        seat.setBerthType(
-                request.getBerthType()
-        );
-
-        seat.setStatus(seat.AVAILABLE);
-
-        return mapToResponse(
-                seatRepository.save(seat)
-        );
+        return seatRepository.save(seat);
     }
 
-    public SeatDTO getById(Long id) {
+    @Transactional(readOnly = true)
+    public Seat getById(Long id) {
 
-        Seat seat = seatRepository.findById(id)
+        return seatRepository.findById(id)
                 .orElseThrow(() ->
-                        new ResourceNotFoundException(
-                                "Seat not found"
-                        )
+                        new RuntimeException("Seat not found")
                 );
-
-        return mapToResponse(seat);
     }
 
-    public SeatDTO update(
-            Long id,
-            SeatDTO request
-    ) {
+    @Transactional(readOnly = true)
+    public List<Seat> getByCoach(Long coachId) {
 
-        Seat seat = seatRepository.findById(id)
-                .orElseThrow();
+        return seatRepository.findByCoachId(coachId);
+    }
 
-        seat.setSeatNumber(
-                request.getSeatNumber()
-        );
+    @Transactional(readOnly = true)
+    public List<Seat> getAvailableSeats(Long coachId) {
 
-        seat.setSeatType(
-                request.getSeatType()
-        );
-
-        return mapToResponse(
-                seatRepository.save(seat)
+        return seatRepository.findByCoachIdAndStatus(
+                coachId,
+                "AVAILABLE"
         );
     }
 
+    @Transactional
+    public Seat update(Long id, Seat updated) {
+
+        Seat seat = getById(id);
+
+        seat.setSeatNumber(updated.getSeatNumber());
+        seat.setBerthType(updated.getBerthType());
+
+        /*
+         * Don't allow ordinary CRUD to manipulate booking status.
+         */
+        return seatRepository.save(seat);
+    }
+
+    @Transactional
     public void delete(Long id) {
 
-        Seat seat = seatRepository.findById(id)
-                .orElseThrow();
+        if (!seatRepository.existsById(id)) {
+            throw new RuntimeException("Seat not found");
+        }
 
-        seatRepository.delete(seat);
+        seatRepository.deleteById(id);
     }
 
-    private SeatDTO mapToResponse(Seat seat) {
+    /*
+     * LOCKED OPERATION
+     */
+    @Transactional
+    public Seat lockAvailableSeat(
+            Long tripId,
+            String classCode
+    ) {
 
-        return new SeatDTO(
-                seat.getId(),
-                seat.getSeatNumber(),
-                seat.getSeatType(),
-                seat.getStatus()
-        );
+        List<Seat> seats =
+                seatRepository
+                        .findAvailableSeatsForTripAndClassForUpdate(
+                                tripId,
+                                classCode
+                        );
+
+        if (seats.isEmpty()) {
+            throw new RuntimeException(
+                    "No seats available"
+            );
+        }
+
+        Seat seat = seats.get(0);
+
+        seat.setStatus("HELD");
+
+        return seatRepository.save(seat);
     }
 }

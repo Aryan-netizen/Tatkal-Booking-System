@@ -1,11 +1,10 @@
 package com.example.Tatkal.Service;
 
-import com.example.Tatkal.Dto.CoachDTO;
-import com.example.Tatkal.Dto.SeatDTO;
 import com.example.Tatkal.Entity.Coach;
 import com.example.Tatkal.Repositry.CoachRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -15,127 +14,44 @@ public class CoachService {
 
     private final CoachRepository coachRepository;
 
-    public CoachDTO create(
-            CoachDTO request
-    ) {
-
-        Coach coach = new Coach();
-
-        coach.setId(
-                request.getId()
-        );
-
-        coach.setCode(
-                request.getCode()
-        );
-
-
-        coach.setClassCode(
-                request.getClassCode()
-        );
-
-        coach.setTrip(
-                request.getTrip()
-        );
-
-
-
-        return mapToResponse(
-                coachRepository.save(coach)
-        );
+    @Transactional
+    public Coach create(Coach coach) {
+        return coachRepository.save(coach);
     }
 
-    public CoachDTO getById(Long id) throws Exception {
+    @Transactional(readOnly = true)
+    public Coach getById(Long id) {
 
-        Coach coach = coachRepository.findById(id)
+        return coachRepository.findById(id)
                 .orElseThrow(() ->
-                        new Exception(
-                                "Coach not found"
-                        )
+                        new RuntimeException("Coach not found")
                 );
-
-        return mapToResponse(coach);
     }
 
+    @Transactional(readOnly = true)
+    public List<Coach> getByTrip(Long tripId) {
 
-
-    public List<SeatDTO> getSeats(Long coachId) {
-
-        Coach coach = coachRepository.findById(coachId)
-                .orElseThrow();
-
-        return coach.getCoachSeats()
-                .stream()
-                .map(seat -> new SeatDTO(
-                        seat.getId(),
-                        seat.getSeatNumber(),
-                        seat.getStatus(),
-                        seat.getBerthType(),
-                        seat.getCoach()
-                ))
-                .toList();
+        return coachRepository.findByTripId(tripId);
     }
 
-    public List<CoachDTO> findAll() {
+    @Transactional
+    public Coach update(Long id, Coach updated) {
 
+        Coach coach = getById(id);
 
+        coach.setCode(updated.getCode());
+        coach.setClassCode(updated.getClassCode());
 
-        return coachRepository.findAll()
-                .stream()
-                .map(coach -> new CoachDTO(
-                        coach.getId(),
-                        coach.getCode(),
-                        coach.getClassCode(),
-                        coach.getTrip()
-                ))
-                .toList();
+        return coachRepository.save(coach);
     }
 
-    public CoachDTO update(
-            Long id,
-            CoachDTO request
-    ) {
-
-        Coach coach = coachRepository.findById(id)
-                .orElseThrow();
-
-        coach.setId(
-                request.getId()
-        );
-        coach.setCode(
-                request.getCode()
-        );
-
-        coach.setClassCode(
-                request.getClassCode()
-        );
-
-        coach.setTrip(
-                request.getTrip()
-        );
-
-        return mapToResponse(
-                coachRepository.save(coach)
-        );
-    }
-
+    @Transactional
     public void delete(Long id) {
 
-        Coach coach = coachRepository.findById(id)
-                .orElseThrow();
+        if (!coachRepository.existsById(id)) {
+            throw new RuntimeException("Coach not found");
+        }
 
-        coachRepository.delete(coach);
-    }
-
-    private CoachDTO mapToResponse(
-            Coach coach
-    ) {
-
-        return new CoachDTO(
-                coach.getId(),
-                coach.getCode(),
-                coach.getClassCode(),
-                coach.getTrip()
-        );
+        coachRepository.deleteById(id);
     }
 }

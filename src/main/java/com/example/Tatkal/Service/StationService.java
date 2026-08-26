@@ -1,102 +1,60 @@
 package com.example.Tatkal.Service;
 
-import com.example.Tatkal.Dto.StationDTO;
 import com.example.Tatkal.Entity.Station;
 import com.example.Tatkal.Repositry.StationRepository;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
 @Service
-public class StationService  {
+@RequiredArgsConstructor
+public class StationService {
 
     private final StationRepository stationRepository;
 
-    public StationService(StationRepository stationRepository) {
-        this.stationRepository = stationRepository;
+    @Transactional
+    public Station create(Station station) {
+        return stationRepository.save(station);
     }
 
-    public StationDTO create(StationDTO request) {
+    @Transactional(readOnly = true)
+    public List<Station> getAll() {
+        return stationRepository.findAll();
+    }
 
-        if (stationRepository.existsByCode(request.getCode())) {
-            throw new RuntimeException("Station already exists");
+    @Transactional(readOnly = true)
+    public Station getById(Long id) {
+        return stationRepository.findById(id)
+                .orElseThrow(() ->
+                        new RuntimeException("Station not found")
+                );
+    }
+
+    @Transactional(readOnly = true)
+    public List<Station> search(String name) {
+        return stationRepository
+                .findByNameContainingIgnoreCase(name);
+    }
+
+    @Transactional
+    public Station update(Long id, Station updated) {
+
+        Station station = getById(id);
+
+        station.setName(updated.getName());
+
+        return stationRepository.save(station);
+    }
+
+    @Transactional
+    public void delete(Long id) {
+
+        if (!stationRepository.existsById(id)) {
+            throw new RuntimeException("Station not found");
         }
 
-        Station station = new Station();
-
-        station.setCode(request.getCode());
-        station.setName(request.getName());
-
-        Station saved = stationRepository.save(station);
-
-        return mapToResponse(saved);
-    }
-
-    public List<StationDTO> getAll() {
-
-        return stationRepository.findAll()
-                .stream()
-                .map(this::mapToResponse)
-                .toList();
-    }
-
-    public List<StationDTO> search(String search) {
-
-        return stationRepository
-                .findByNameContainingIgnoreCase(search)
-                .stream()
-                .map(this::mapToResponse)
-                .toList();
-    }
-
-    public StationDTO getByCode(String code) throws Exception{
-
-        Station station = stationRepository.findByCode(code)
-                .orElseThrow(() ->
-                        new Exception(
-                                "Station not found"
-                        )
-                );
-
-        return mapToResponse(station);
-    }
-
-    public StationDTO update (
-            String code,
-            StationDTO request
-    ) throws Exception {
-
-        Station station = stationRepository.findByCode(code)
-                .orElseThrow(() ->
-                        new Exception(
-                                "Station not found"
-                        )
-                );
-
-        station.setName(request.getName());
-
-        return mapToResponse(
-                stationRepository.save(station)
-        );
-    }
-
-    public void delete(String code) throws Exception{
-
-        Station station = stationRepository.findByCode(code)
-                .orElseThrow(() ->
-                        new Exception(
-                                "Station not found"
-                        )
-                );
-
-        stationRepository.delete(station);
-    }
-
-    private StationDTO mapToResponse(Station station) {
-
-        return new StationDTO(
-                station.getCode(),
-                station.getName()
-        );
+        stationRepository.deleteById(id);
     }
 }

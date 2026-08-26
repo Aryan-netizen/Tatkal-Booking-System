@@ -36,25 +36,25 @@ public class StationController {
     }
 
     @GetMapping("/{code}")
-    public ResponseEntity<StationDTO> getStation(@PathVariable(name = "code") final Long code) {
+    public ResponseEntity<StationDTO> getStation(@PathVariable(name = "code") final String code) throws Exception {
         return ResponseEntity.ok(stationService.getByCode(code));
     }
 
     @PostMapping
-    public ResponseEntity<Long> createStation(@RequestBody @Valid final StationDTO stationDTO) {
-        final Long createdCode = stationService.create(stationDTO);
+    public ResponseEntity<StationDTO> createStation(@RequestBody @Valid final StationDTO stationDTO) {
+        final StationDTO createdCode = stationService.create(stationDTO);
         return new ResponseEntity<>(createdCode, HttpStatus.CREATED);
     }
 
     @PutMapping("/{code}")
-    public ResponseEntity<Long> updateStation(@PathVariable(name = "code") final Long code,
-                                              @RequestBody @Valid final StationDTO stationDTO) {
+    public ResponseEntity<String> updateStation(@PathVariable(name = "code") final String code,
+                                              @RequestBody @Valid final StationDTO stationDTO) throws Exception {
         stationService.update(code, stationDTO);
         return ResponseEntity.ok(code);
     }
 
     @DeleteMapping("/{code}")
-    public ResponseEntity<Void> deleteStation(@PathVariable(name = "code") final Long code) {
+    public ResponseEntity<Void> deleteStation(@PathVariable(name = "code") final String code) throws Exception {
         stationService.delete(code);
         return ResponseEntity.noContent().build();
     }

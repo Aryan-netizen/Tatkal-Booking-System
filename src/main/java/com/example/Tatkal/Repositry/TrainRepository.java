@@ -1,8 +1,14 @@
 package com.example.Tatkal.Repositry;
 
 import com.example.Tatkal.Entity.Booking;
+import com.example.Tatkal.Entity.Train;
 import org.springframework.data.jpa.repository.JpaRepository;
 
-public interface TrainRepository extends JpaRepository<Booking,Long> {
+import java.util.Optional;
 
+public interface TrainRepository extends JpaRepository<Train,Long> {
+
+    boolean existsByNumber(Long number);
+
+    Optional<Train> findByNumber(String number);
 }

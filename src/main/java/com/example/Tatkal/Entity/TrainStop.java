@@ -41,10 +41,10 @@ public class TrainStop {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "train_number_id", nullable = false)
-    private Train trainNumber;
+    private Train train;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "station_code_id", nullable = false)
-    private Station stationCode;
+    private Station station;
 
 }

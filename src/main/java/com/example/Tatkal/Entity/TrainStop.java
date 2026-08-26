@@ -28,9 +28,6 @@ public class TrainStop {
     @Id
     @Column(nullable = false, updatable = false)
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long number;
-
-
     private Integer seq;
 
     @Column

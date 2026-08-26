@@ -11,4 +11,6 @@ public interface TrainRepository extends JpaRepository<Train,Long> {
     boolean existsByNumber(Long number);
 
     Optional<Train> findByNumber(String number);
+
+    Optional<Train> findByTrain(String trainNumber);
 }

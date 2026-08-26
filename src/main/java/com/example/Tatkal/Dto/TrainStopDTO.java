@@ -15,7 +15,6 @@ import lombok.Setter;
 @NoArgsConstructor
 public class TrainStopDTO {
 
-    private Long number;
 
     private Integer seq;
 

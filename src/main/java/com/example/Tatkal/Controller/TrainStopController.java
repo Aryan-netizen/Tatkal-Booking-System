@@ -22,8 +22,8 @@ public class TrainStopController {
         this.trainStopService = trainStopService;
     }
 
-    @GetMapping
-    public ResponseEntity<TrainStopDTO> getAll(
+    @GetMapping("/{train}")
+    public ResponseEntity<List<TrainStopDTO>> getAll(
             @PathVariable String trainNumber) {
 
         return ResponseEntity.ok(
@@ -34,14 +34,14 @@ public class TrainStopController {
     @GetMapping("/{seq}")
     public ResponseEntity<TrainStopDTO> getTrainStop(
             @PathVariable(name = "seq") final Integer seq) {
-        return ResponseEntity.ok(trainStopService.get(seq));
+        return ResponseEntity.ok(trainStopService.getBySeq(String.valueOf(seq)));
     }
 
     // CREATE
     @PostMapping
     public ResponseEntity<TrainStopDTO> create(
             @PathVariable String trainNumber,
-            @Valid @RequestBody TrainStopDTO request) {
+            @Valid @RequestBody TrainStopDTO request) throws Exception {
 
         return ResponseEntity
                 .status(HttpStatus.CREATED)
@@ -57,7 +57,7 @@ public class TrainStopController {
     public ResponseEntity<?> update(
             @PathVariable String trainNumber,
             @PathVariable Integer sequence,
-            @Valid @RequestBody TrainStopDTO request) {
+            @Valid @RequestBody TrainStopDTO request) throws Exception {
 
         return ResponseEntity.ok(
                 trainStopService.update(

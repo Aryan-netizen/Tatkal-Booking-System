@@ -153,7 +153,6 @@ public class TrainService {
     ) {
 
         return new TrainStopDTO(
-                stop.getNumber(),
                 stop.getSeq(),
                 stop.getArrivalTime(),
                 stop.getDepartureTime(),

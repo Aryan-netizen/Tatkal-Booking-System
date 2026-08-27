@@ -1,6 +1,6 @@
 package com.example.Tatkal.Controller;
 
-import com.example.Tatkal.Dto.PassengerDTO;
+import com.example.Tatkal.Entity.Passenger;
 import com.example.Tatkal.Service.PassengerService;
 import jakarta.validation.Valid;
 import java.util.List;
@@ -21,7 +21,7 @@ public class PassengerController {
     }
 
     @GetMapping("/bookings/{bookingId}/passengers")
-    public ResponseEntity<?> getByBooking(
+    public ResponseEntity<List<Passenger>> getByBooking(
             @PathVariable Long bookingId) {
 
         return ResponseEntity.ok(
@@ -34,9 +34,9 @@ public class PassengerController {
 
 
     @PostMapping("/bookings/{bookingId}/passengers")
-    public ResponseEntity<?> create(
+    public ResponseEntity<Passenger> create(
             @PathVariable Long bookingId,
-            @Valid @RequestBody PassengerDTO request) {
+            @Valid @RequestBody Passenger request) {
 
         return ResponseEntity.ok(
                 passengerService.create(
@@ -46,9 +46,9 @@ public class PassengerController {
         );
     }
     @PatchMapping("/passengers/{id}")
-    public ResponseEntity<?> update(
+    public ResponseEntity<Passenger> update(
             @PathVariable Long id,
-            @Valid @RequestBody PassengerDTO request) {
+            @Valid @RequestBody Passenger request) {
 
         return ResponseEntity.ok(
                 passengerService.update(

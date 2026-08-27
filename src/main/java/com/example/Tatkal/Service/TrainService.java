@@ -9,6 +9,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @Service
@@ -38,10 +39,14 @@ public class TrainService {
     }
 
     @Transactional(readOnly = true)
-    public List<Train> search(String name) {
-
+    public List<Train> search(Long from, Long to, LocalDate date) {
+        if (from.equals(to)) {
+            throw new IllegalArgumentException(
+                    "From and To stations cannot be same"
+            );
+        }
         return trainRepository
-                .findByNameContainingIgnoreCase(name);
+                .searchTrains(from,to,date);
     }
 
     @Transactional

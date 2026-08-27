@@ -32,6 +32,12 @@ public class SeatService {
                         new RuntimeException("Seat not found")
                 );
     }
+    @Transactional(readOnly = true)
+    public List<Seat> findAll() {
+
+        return seatRepository.findAll();
+
+    }
 
     @Transactional(readOnly = true)
     public List<Seat> getByCoach(Long coachId) {

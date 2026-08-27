@@ -51,6 +51,13 @@ public class TrainStopService {
                 .findStopsByTrain(trainNumber);
     }
 
+    @Transactional(readOnly = true)
+    public List<TrainStop> getBySeq(Long trainNumber) {
+
+        return trainStopRepository
+                .findStopsByTrain(trainNumber);
+    }
+
     @Transactional
     public TrainStop update(
             Integer id,

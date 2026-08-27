@@ -1,6 +1,7 @@
 package com.example.Tatkal.Controller;
 
 import com.example.Tatkal.Dto.TrainStopDTO;
+import com.example.Tatkal.Entity.TrainStop;
 import com.example.Tatkal.Service.TrainStopService;
 import jakarta.validation.Valid;
 import java.util.List;
@@ -13,7 +14,7 @@ import org.springframework.web.bind.annotation.*;
 
 
 @RestController
-@RequestMapping(value = "/api/trains/{trainNumber}/stops", produces = MediaType.APPLICATION_JSON_VALUE)
+@RequestMapping(value = "/api/trains", produces = MediaType.APPLICATION_JSON_VALUE)
 public class TrainStopController {
 
     private final TrainStopService trainStopService;
@@ -23,58 +24,56 @@ public class TrainStopController {
     }
 
     @GetMapping("/{train}")
-    public ResponseEntity<List<TrainStopDTO>> getAll(
-            @PathVariable String trainNumber) {
+    public ResponseEntity<List<TrainStop>> getAll(
+            @PathVariable Long trainNumber) {
 
         return ResponseEntity.ok(
                 trainStopService.getByTrain(trainNumber)
         );
     }
 
-    @GetMapping("/{seq}")
-    public ResponseEntity<TrainStopDTO> getTrainStop(
-            @PathVariable(name = "seq") final Integer seq) {
-        return ResponseEntity.ok(trainStopService.getBySeq(String.valueOf(seq)));
+    @GetMapping("seq/{seq}")
+    public ResponseEntity<List<TrainStop>> getTrainStop(
+            @PathVariable(name = "seq") final Long seq) {
+        return ResponseEntity.ok(trainStopService.getBySeq(seq));
     }
 
     // CREATE
-    @PostMapping
-    public ResponseEntity<TrainStopDTO> create(
-            @PathVariable String trainNumber,
-            @Valid @RequestBody TrainStopDTO request) throws Exception {
+    @PostMapping("/{trainNumber}/{stationNumber}")
+    public ResponseEntity<TrainStop> create(
+            @PathVariable Long trainNumber,
+            @PathVariable Long stationNumber,
+            @Valid @RequestBody TrainStop request) throws Exception {
 
         return ResponseEntity
                 .status(HttpStatus.CREATED)
                 .body(
                         trainStopService.create(
                                 trainNumber,
+                                stationNumber,
                                 request
                         )
                 );
     }
 
-    @PatchMapping("/{seq}")
+    @PatchMapping("/{id}")
     public ResponseEntity<?> update(
-            @PathVariable String trainNumber,
-            @PathVariable Integer sequence,
-            @Valid @RequestBody TrainStopDTO request) throws Exception {
+            @PathVariable Integer id,
+            @Valid @RequestBody TrainStop request) throws Exception {
 
         return ResponseEntity.ok(
                 trainStopService.update(
-                        trainNumber,
-                        sequence,
+                        id,
                         request
                 )
         );
     }
 
-    @DeleteMapping("/{sequence}")
+    @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(
-            @PathVariable String trainNumber,
             @PathVariable Integer sequence) {
 
         trainStopService.delete(
-                trainNumber,
                 sequence
         );
 

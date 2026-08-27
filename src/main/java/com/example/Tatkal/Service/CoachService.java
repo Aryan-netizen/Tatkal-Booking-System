@@ -1,6 +1,7 @@
 package com.example.Tatkal.Service;
 
 import com.example.Tatkal.Entity.Coach;
+import com.example.Tatkal.Entity.Seat;
 import com.example.Tatkal.Repositry.CoachRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -32,6 +33,17 @@ public class CoachService {
     public List<Coach> getByTrip(Long tripId) {
 
         return coachRepository.findByTripId(tripId);
+    }
+    @Transactional(readOnly = true)
+    public List<Coach> findAll() {
+
+        return coachRepository.findAll();
+    }
+
+    @Transactional(readOnly = true)
+    public List<Seat> getSeats(Long tripId) {
+
+        return coachRepository.findBySeatId(tripId);
     }
 
     @Transactional

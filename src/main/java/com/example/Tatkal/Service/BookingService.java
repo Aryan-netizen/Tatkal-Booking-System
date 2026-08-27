@@ -220,4 +220,45 @@ public class BookingService {
 
         return bookingRepository.save(booking);
     }
+
+    @Transactional
+    public Booking confirmBooking(Long bookingId) {
+
+        Booking booking =
+                bookingRepository.findById(bookingId)
+                        .orElseThrow(() ->
+                                new RuntimeException(
+                                        "Booking not found"
+                                )
+                        );
+
+        if (!"HELD".equals(booking.getStatus())) {
+            throw new RuntimeException(
+                    "Booking is not in HELD state"
+            );
+        }
+
+        Seat seat = booking.getSeat();
+
+        if (seat == null) {
+            throw new RuntimeException(
+                    "No seat assigned to booking"
+            );
+        }
+
+        if (!"HELD".equals(seat.getStatus())) {
+            throw new RuntimeException(
+                    "Seat is not held"
+            );
+        }
+
+        seat.setStatus("BOOKED");
+
+        booking.setStatus("CONFIRMED");
+
+        seatRepository.save(seat);
+
+        return bookingRepository.save(booking);
+    }
 }
+

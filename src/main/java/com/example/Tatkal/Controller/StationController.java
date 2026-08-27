@@ -1,6 +1,7 @@
 package com.example.Tatkal.Controller;
 
 import com.example.Tatkal.Dto.StationDTO;
+import com.example.Tatkal.Entity.Station;
 import com.example.Tatkal.Service.StationService;
 import jakarta.validation.Valid;
 import java.util.List;
@@ -21,7 +22,7 @@ public class StationController {
     }
 
     @GetMapping
-    public ResponseEntity<List<StationDTO>> getAll(
+    public ResponseEntity<List<Station>> getAll(
             @RequestParam(required = false) String search) {
 
         if (search != null && !search.isBlank()) {
@@ -36,25 +37,25 @@ public class StationController {
     }
 
     @GetMapping("/{code}")
-    public ResponseEntity<StationDTO> getStation(@PathVariable(name = "code") final String code) throws Exception {
-        return ResponseEntity.ok(stationService.getByCode(code));
+    public ResponseEntity<Station> getStation(@PathVariable(name = "code") final Long code) throws Exception {
+        return ResponseEntity.ok(stationService.getById(code));
     }
 
     @PostMapping
-    public ResponseEntity<StationDTO> createStation(@RequestBody @Valid final StationDTO stationDTO) {
-        final StationDTO createdCode = stationService.create(stationDTO);
+    public ResponseEntity<Station> createStation(@RequestBody @Valid final Station station) {
+        final Station createdCode = stationService.create(station);
         return new ResponseEntity<>(createdCode, HttpStatus.CREATED);
     }
 
     @PutMapping("/{code}")
-    public ResponseEntity<String> updateStation(@PathVariable(name = "code") final String code,
-                                              @RequestBody @Valid final StationDTO stationDTO) throws Exception {
-        stationService.update(code, stationDTO);
+    public ResponseEntity<Long> updateStation(@PathVariable(name = "code") final Long code,
+                                              @RequestBody @Valid final Station station) throws Exception {
+        stationService.update(code, station);
         return ResponseEntity.ok(code);
     }
 
     @DeleteMapping("/{code}")
-    public ResponseEntity<Void> deleteStation(@PathVariable(name = "code") final String code) throws Exception {
+    public ResponseEntity<Void> deleteStation(@PathVariable(name = "code") final Long code) throws Exception {
         stationService.delete(code);
         return ResponseEntity.noContent().build();
     }

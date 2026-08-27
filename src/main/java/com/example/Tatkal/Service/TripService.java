@@ -21,7 +21,7 @@ public class TripService {
     }
 
     @Transactional(readOnly = true)
-    public List<Trip> getAll() {
+    public List<Trip> findAll() {
         return tripRepository.findAll();
     }
 
@@ -41,10 +41,16 @@ public class TripService {
     }
 
     @Transactional(readOnly = true)
+    public List<Trip> getByTrainAndDate(Long id,LocalDate date) {
+
+        return tripRepository.findByTrainNumberAndTravelDate(id,date);
+    }
+
+    @Transactional(readOnly = true)
     public List<Trip> getByTrain(Long trainNumber) {
 
         return tripRepository
-                .findByTrainNumberNumber(trainNumber);
+                .findByTrainNumber(trainNumber);
     }
 
     @Transactional

@@ -1,6 +1,6 @@
 package com.example.Tatkal.Controller;
 
-import com.example.Tatkal.Dto.UsersDTO;
+import com.example.Tatkal.Entity.Users;
 import com.example.Tatkal.Service.UserService;
 import jakarta.validation.Valid;
 import java.util.List;
@@ -28,25 +28,30 @@ public class UserController {
     }
 
     @GetMapping
-    public ResponseEntity<List<UsersDTO>> getAllUserss() {
+    public ResponseEntity<List<Users>> getAllUsers() {
         return ResponseEntity.ok(usersService.findAll());
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<UsersDTO> getUsers(@PathVariable(name = "id") final Long id) {
-        return ResponseEntity.ok(usersService.get(id));
+    public ResponseEntity<Users> getUsers(@PathVariable(name = "id") final Long id) {
+        return ResponseEntity.ok(usersService.getById(id));
+    }
+
+    @GetMapping("/email/{id}")
+    public ResponseEntity<Users> getUsers(@PathVariable(name = "id") final String id) {
+        return ResponseEntity.ok(usersService.getByEmail(id));
     }
 
     @PostMapping
-    public ResponseEntity<Long> createUsers(@RequestBody @Valid final UsersDTO usersDTO) {
-        final Long createdId = usersService.create(usersDTO);
+    public ResponseEntity<Users> createUsers(@RequestBody @Valid final Users user) {
+        final Users createdId = usersService.create(user);
         return new ResponseEntity<>(createdId, HttpStatus.CREATED);
     }
 
     @PutMapping("/{id}")
     public ResponseEntity<Long> updateUsers(@PathVariable(name = "id") final Long id,
-                                            @RequestBody @Valid final UsersDTO usersDTO) {
-        usersService.update(id, usersDTO);
+                                            @RequestBody @Valid final Users user) {
+        usersService.update(id, user);
         return ResponseEntity.ok(id);
     }
 

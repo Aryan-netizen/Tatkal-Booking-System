@@ -11,9 +11,9 @@ public interface TripRepository
 
     List<Trip> findByTravelDate(LocalDate travelDate);
 
-    List<Trip> findByTrainNumberNumber(Long trainNumber);
+    List<Trip> findByTrainNumber(Long trainNumber);
 
-    List<Trip> findByTrainNumberNumberAndTravelDate(
+    List<Trip> findByTrainNumberAndTravelDate(
             Long trainNumber,
             LocalDate travelDate
     );

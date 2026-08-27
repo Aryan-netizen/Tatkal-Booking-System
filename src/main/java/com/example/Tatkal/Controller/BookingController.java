@@ -1,6 +1,6 @@
 package com.example.Tatkal.Controller;
 
-import com.example.Tatkal.Dto.BookingDTO;
+import com.example.Tatkal.Entity.Booking;
 import com.example.Tatkal.Service.BookingService;
 import jakarta.validation.Valid;
 import java.util.List;
@@ -27,19 +27,31 @@ public class BookingController {
         this.bookingService = bookingService;
     }
 
-    @GetMapping
-    public ResponseEntity<List<BookingDTO>> getAllBookings() {
-        return ResponseEntity.ok(bookingService.findAll());
-    }
 
     @GetMapping("/{id}")
-    public ResponseEntity<BookingDTO> getBooking(@PathVariable(name = "id") final Long id) {
-        return ResponseEntity.ok(bookingService.get(id));
+    public ResponseEntity<Booking> getBooking(@PathVariable(name = "id") final Long id) {
+        return ResponseEntity.ok(bookingService.getBooking(id));
+    }
+
+    @GetMapping("/user/{id}")
+    public ResponseEntity<List<Booking>> getUserBooking(@PathVariable(name = "id") final Long id) {
+        return ResponseEntity.ok(bookingService.getUserBookings(id));
+    }
+
+    @GetMapping("/user/{id}")
+    public ResponseEntity<List<Booking>> getTripBooking(@PathVariable(name = "id") final Long id) {
+        return ResponseEntity.ok(bookingService.getTripBookings(id));
     }
 
     @PostMapping
-    public ResponseEntity<Long> createBooking(@RequestBody @Valid final BookingDTO bookingDTO) {
-        final Long createdId = bookingService.create(bookingDTO);
+    public ResponseEntity<Booking> createBooking(@RequestBody @Valid final Booking booking) {
+        Long userId= booking.getUser().getId();
+        Long tripId=booking.getTrip().getId();
+        Integer fromSeq=booking.getFromSeq();
+        Integer toSeq=booking.getFromSeq();
+        String classCode=booking.getSeat().getCoach().getClassCode();
+        Long amountPaise= booking.getAmountPaise();
+        final Booking createdId = bookingService.createBooking(userId,tripId,fromSeq,toSeq,classCode,amountPaise);
         return new ResponseEntity<>(createdId, HttpStatus.CREATED);
     }
     @PostMapping("/{id}/cancel")
@@ -63,16 +75,10 @@ public class BookingController {
         );
     }
 
-    @PutMapping("/{id}")
-    public ResponseEntity<Long> updateBooking(@PathVariable(name = "id") final Long id,
-                                              @RequestBody @Valid final BookingDTO bookingDTO) {
-        bookingService.update(id, bookingDTO);
-        return ResponseEntity.ok(id);
-    }
 
-    @DeleteMapping("/{id}")
+    @DeleteMapping("/{id}/cancel")
     public ResponseEntity<Void> deleteBooking(@PathVariable(name = "id") final Long id) {
-        bookingService.delete(id);
+        bookingService.cancelBooking(id);
         return ResponseEntity.noContent().build();
     }
 

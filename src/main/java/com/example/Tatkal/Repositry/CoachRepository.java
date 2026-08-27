@@ -1,6 +1,7 @@
 package com.example.Tatkal.Repositry;
 
 import com.example.Tatkal.Entity.Coach;
+import com.example.Tatkal.Entity.Seat;
 import com.example.Tatkal.Entity.Trip;
 import org.springframework.data.jpa.repository.JpaRepository;
 
@@ -16,4 +17,6 @@ public interface CoachRepository extends JpaRepository<Coach, Long> {
     Optional<Coach> findByTripIdAndCode(Long tripId, String code);
 
     List<Coach> findByClassCode(String classCode);
+
+    List<Seat> findBySeatId(Long tripId);
 }

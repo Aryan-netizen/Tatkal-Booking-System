@@ -1,6 +1,6 @@
 package com.example.Tatkal.Controller;
 
-import com.example.Tatkal.Dto.PaymentDTO;
+import com.example.Tatkal.Entity.Payment;
 import com.example.Tatkal.Service.PaymentService;
 import jakarta.validation.Valid;
 import java.util.List;
@@ -33,26 +33,24 @@ public class PaymentController {
     }
 
     @PostMapping("/bookings/{bookingId}/payment")
-    public ResponseEntity<?> createPayment(
+    public ResponseEntity<Payment> createPayment(
             @PathVariable Long bookingId,
-            @Valid @RequestBody PaymentDTO request) {
+            @Valid @RequestBody Long amount) {
 
         return ResponseEntity.ok(
                 paymentService.createPayment(
                         bookingId,
-                        request
+                        amount
                 )
         );
     }
 
-    @PostMapping("/payments/webhook")
+    @PostMapping("/paymentSuccess/{transactionId}")
     public ResponseEntity<Void> webhook(
-            @RequestBody String payload,
-            @RequestHeader("X-Signature") String signature) {
+            @PathVariable String transationId) {
 
-        paymentService.processWebhook(
-                payload,
-                signature
+        paymentService.processPaymentSuccess(
+                transationId
         );
 
         return ResponseEntity.ok().build();

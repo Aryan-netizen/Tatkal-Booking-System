@@ -32,7 +32,7 @@ public class Station {
     @Column(nullable = false, columnDefinition = "longtext")
     private String name;
 
-    @OneToMany(mappedBy = "stationCode")
+    @OneToMany(mappedBy = "station")
     private Set<TrainStop> stationCodeTrainStops = new HashSet<>();
 
 }

@@ -13,16 +13,16 @@ public interface TrainRepository
 
 
     @Query("""
-        SELECT DISTINCT t
-        FROM Train t
-        JOIN t.trainNumberTrainStops fromStop
-        JOIN t.trainNumberTrainStops toStop
-        JOIN t.trainNumberTrips trip
-        WHERE fromStop.station.code = :from
-          AND toStop.station.code = :to
-          AND fromStop.seq < toStop.seq
-          AND trip.travelDate = :date
-    """)
+    SELECT DISTINCT t
+    FROM Train t
+    JOIN t.trainStops fromStop
+    JOIN t.trainStops toStop
+    JOIN t.trips trip
+    WHERE fromStop.station.code = :from
+      AND toStop.station.code = :to
+      AND fromStop.seq < toStop.seq
+      AND trip.travelDate = :date
+""")
     List<Train> searchTrains(
             @Param("from") Long from,
             @Param("to") Long to,

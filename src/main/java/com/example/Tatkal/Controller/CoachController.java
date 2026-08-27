@@ -42,7 +42,7 @@ public class CoachController {
         return ResponseEntity.ok(coachService.getById(id));
     }
     @GetMapping("/{id}/seats")
-    public ResponseEntity<List<Seat>> getSeats(
+    public ResponseEntity<Coach> getSeats(
             @PathVariable Long id) {
 
         return ResponseEntity.ok(

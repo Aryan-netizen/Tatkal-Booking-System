@@ -32,10 +32,10 @@ public class Train {
     @Column(nullable = false, columnDefinition = "longtext")
     private String name;
 
-    @OneToMany(mappedBy = "trainNumber")
-    private Set<TrainStop> trainNumberTrainStops = new HashSet<>();
+    @OneToMany(mappedBy = "train")
+    private Set<TrainStop> trainStops = new HashSet<>();
 
     @OneToMany(mappedBy = "trainNumber")
-    private Set<Trip> trainNumberTrips = new HashSet<>();
+    private Set<Trip> trips = new HashSet<>();
 
 }

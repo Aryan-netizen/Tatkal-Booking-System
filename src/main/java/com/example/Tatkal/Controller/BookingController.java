@@ -38,7 +38,7 @@ public class BookingController {
         return ResponseEntity.ok(bookingService.getUserBookings(id));
     }
 
-    @GetMapping("/user/{id}")
+    @GetMapping("/trip/{id}")
     public ResponseEntity<List<Booking>> getTripBooking(@PathVariable(name = "id") final Long id) {
         return ResponseEntity.ok(bookingService.getTripBookings(id));
     }

@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -41,9 +42,9 @@ public class CoachService {
     }
 
     @Transactional(readOnly = true)
-    public List<Seat> getSeats(Long tripId) {
+    public Coach getSeats(Long tripId) {
 
-        return coachRepository.findBySeatId(tripId);
+        return coachRepository.findCoachBySeatId(tripId).get();
     }
 
     @Transactional

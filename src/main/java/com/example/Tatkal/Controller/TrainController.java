@@ -51,7 +51,7 @@ public class TrainController {
     }
 
     @PostMapping
-    public ResponseEntity<TrainDTO> create(@RequestBody @Valid final TrainDTO trainDTO) {
+    public ResponseEntity<TrainDTO> create(@RequestBody @Valid final TrainDTO trainDTO) throws Exception {
         final TrainDTO createdTrain = trainService.create(trainDTO);
         return new ResponseEntity<>(createdTrain, HttpStatus.CREATED);
     }

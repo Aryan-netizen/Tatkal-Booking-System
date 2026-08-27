@@ -23,7 +23,8 @@ public class TrainService {
     private final DTOMapperService mapperService;
 
     @Transactional
-    public TrainDTO create(TrainDTO trainDTO) {
+    public TrainDTO create(TrainDTO trainDTO) throws Exception {
+
         Train train = mapperService.toTrainEntity(trainDTO);
         Train savedTrain = trainRepository.save(train);
         return mapperService.toTrainDTO(savedTrain);

@@ -37,6 +37,7 @@ public class TrainStopService {
                 );
 
         TrainStop trainStop = mapperService.toTrainStopEntity(trainStopDTO, train, station);
+        trainStop.setSeq(null);
         TrainStop savedTrainStop = trainStopRepository.save(trainStop);
         return mapperService.toTrainStopDTO(savedTrainStop);
     }

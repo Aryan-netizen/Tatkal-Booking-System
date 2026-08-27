@@ -2,6 +2,7 @@ package com.example.Tatkal.Repositry;
 
 import com.example.Tatkal.Entity.Train;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
@@ -28,4 +29,6 @@ public interface TrainRepository
             @Param("to") Long to,
             @Param("date") LocalDate date
     );
+
+
 }

@@ -32,6 +32,7 @@ Make Payment
   │
   └── Payment Failed ──────► Booking Remains Unconfirmed
 
+```
 # Railway Booking System API Endpoints
 
 This document provides a complete list of all API endpoints with request/response examples for the Tatkal Railway Booking System.

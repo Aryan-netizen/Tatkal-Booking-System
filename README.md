@@ -1,3 +1,37 @@
+# Railway Tatkal Booking System
+
+A full-stack railway ticket booking system built to simulate the core workflow of a Tatkal-style railway reservation platform.
+
+The system provides functionality for managing users, trains, stations, trips, coaches, seats, passengers, bookings, and payments. It also includes concurrency control to prevent multiple users from reserving the same seat at the same time.
+
+---
+
+## 📌 Project Overview
+
+The Railway Tatkal Booking System is designed around the following booking flow:
+
+```text
+User
+  │
+  ▼
+Search Train
+  │
+  ▼
+Select Trip & Seat
+  │
+  ▼
+Create Booking
+  │
+  ▼
+Seat Temporarily Held
+  │
+  ▼
+Make Payment
+  │
+  ├── Payment Successful ──► Booking Confirmed
+  │
+  └── Payment Failed ──────► Booking Remains Unconfirmed
+
 # Railway Booking System API Endpoints
 
 This document provides a complete list of all API endpoints with request/response examples for the Tatkal Railway Booking System.

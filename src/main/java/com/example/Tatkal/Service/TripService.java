@@ -1,6 +1,9 @@
 package com.example.Tatkal.Service;
 
+import com.example.Tatkal.Dto.TripDTO;
+import com.example.Tatkal.Entity.Train;
 import com.example.Tatkal.Entity.Trip;
+import com.example.Tatkal.Repositry.TrainRepository;
 import com.example.Tatkal.Repositry.TripRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -14,53 +17,75 @@ import java.util.List;
 public class TripService {
 
     private final TripRepository tripRepository;
+    private final TrainRepository trainRepository;
+    private final DTOMapperService mapperService;
 
     @Transactional
-    public Trip create(Trip trip) {
-        return tripRepository.save(trip);
+    public TripDTO create(TripDTO tripDTO) {
+        Train train = trainRepository.findById(tripDTO.getTrainNumber())
+                .orElseThrow(() -> new RuntimeException("Train not found"));
+        
+        Trip trip = mapperService.toTripEntity(tripDTO, train);
+        Trip savedTrip = tripRepository.save(trip);
+        return mapperService.toTripDTO(savedTrip);
     }
 
     @Transactional(readOnly = true)
-    public List<Trip> findAll() {
-        return tripRepository.findAll();
+    public List<TripDTO> findAll() {
+        List<Trip> trips = tripRepository.findAll();
+        return mapperService.toTripDTOList(trips);
     }
 
     @Transactional(readOnly = true)
-    public Trip getById(Long id) {
+    public TripDTO getById(Long id) {
 
-        return tripRepository.findById(id)
+        Trip trip = tripRepository.findById(id)
                 .orElseThrow(() ->
                         new RuntimeException("Trip not found")
                 );
+
+        return mapperService.toTripDTO(trip);
     }
 
     @Transactional(readOnly = true)
-    public List<Trip> getByDate(LocalDate date) {
+    public List<TripDTO> getByDate(LocalDate date) {
 
-        return tripRepository.findByTravelDate(date);
+        List<Trip> trips = tripRepository.findByTravelDate(date);
+        return mapperService.toTripDTOList(trips);
     }
 
     @Transactional(readOnly = true)
-    public List<Trip> getByTrainAndDate(Long id,LocalDate date) {
+    public List<TripDTO> getByTrainAndDate(Long id, LocalDate date) {
 
-        return tripRepository.findByTrainNumberAndTravelDate(id,date);
+        List<Trip> trips = tripRepository.findByTrainNumberAndTravelDate(id, date);
+        return mapperService.toTripDTOList(trips);
     }
 
     @Transactional(readOnly = true)
-    public List<Trip> getByTrain(Long trainNumber) {
+    public List<TripDTO> getByTrain(Long trainNumber) {
 
-        return tripRepository
-                .findByTrainNumber(trainNumber);
+        List<Trip> trips = tripRepository.findByTrainNumber(trainNumber);
+        return mapperService.toTripDTOList(trips);
     }
 
     @Transactional
-    public Trip update(Long id, Trip updated) {
+    public TripDTO update(Long id, TripDTO updatedDTO) {
 
-        Trip trip = getById(id);
+        Trip trip = tripRepository.findById(id)
+                .orElseThrow(() ->
+                        new RuntimeException("Trip not found")
+                );
 
-        trip.setTravelDate(updated.getTravelDate());
+        trip.setTravelDate(updatedDTO.getTravelDate());
 
-        return tripRepository.save(trip);
+        if (!trip.getTrainNumber().getNumber().equals(updatedDTO.getTrainNumber())) {
+            Train train = trainRepository.findById(updatedDTO.getTrainNumber())
+                    .orElseThrow(() -> new RuntimeException("Train not found"));
+            trip.setTrainNumber(train);
+        }
+
+        Trip savedTrip = tripRepository.save(trip);
+        return mapperService.toTripDTO(savedTrip);
     }
 
     @Transactional

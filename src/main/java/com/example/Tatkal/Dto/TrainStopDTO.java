@@ -1,6 +1,8 @@
 package com.example.Tatkal.Dto;
 
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Positive;
+import jakarta.validation.constraints.Size;
 import java.time.LocalTime;
 
 import lombok.AllArgsConstructor;
@@ -15,7 +17,8 @@ import lombok.Setter;
 @NoArgsConstructor
 public class TrainStopDTO {
 
-
+    @NotNull
+    @Positive
     private Integer seq;
 
     private LocalTime arrivalTime;

@@ -1,6 +1,6 @@
 package com.example.Tatkal.Controller;
 
-import com.example.Tatkal.Entity.Passenger;
+import com.example.Tatkal.Dto.PassengerDTO;
 import com.example.Tatkal.Service.PassengerService;
 import jakarta.validation.Valid;
 import java.util.List;
@@ -20,49 +20,31 @@ public class PassengerController {
         this.passengerService = passengerService;
     }
 
+    @GetMapping("/passengers/{id}")
+    public ResponseEntity<PassengerDTO> getPassenger(@PathVariable Long id) {
+        return ResponseEntity.ok(passengerService.getById(id));
+    }
+
     @GetMapping("/bookings/{bookingId}/passengers")
-    public ResponseEntity<List<Passenger>> getByBooking(
-            @PathVariable Long bookingId) {
-
-        return ResponseEntity.ok(
-                passengerService.getByBooking(
-                        bookingId
-                )
-        );
+    public ResponseEntity<List<PassengerDTO>> getByBooking(@PathVariable Long bookingId) {
+        return ResponseEntity.ok(passengerService.getByBooking(bookingId));
     }
 
-
-
-    @PostMapping("/bookings/{bookingId}/passengers")
-    public ResponseEntity<Passenger> create(
-            @PathVariable Long bookingId,
-            @Valid @RequestBody Passenger request) {
-
-        return ResponseEntity.ok(
-                passengerService.create(
-                        bookingId,
-                        request
-                )
-        );
+    @PostMapping("/passengers")
+    public ResponseEntity<PassengerDTO> create(@Valid @RequestBody PassengerDTO passengerDTO) {
+        PassengerDTO createdPassenger = passengerService.create(passengerDTO);
+        return new ResponseEntity<>(createdPassenger, HttpStatus.CREATED);
     }
-    @PatchMapping("/passengers/{id}")
-    public ResponseEntity<Passenger> update(
-            @PathVariable Long id,
-            @Valid @RequestBody Passenger request) {
-
-        return ResponseEntity.ok(
-                passengerService.update(
-                        id,
-                        request
-                )
-        );
+    
+    @PutMapping("/passengers/{id}")
+    public ResponseEntity<PassengerDTO> update(@PathVariable Long id, @Valid @RequestBody PassengerDTO passengerDTO) {
+        PassengerDTO updatedPassenger = passengerService.update(id, passengerDTO);
+        return ResponseEntity.ok(updatedPassenger);
     }
+    
     @DeleteMapping("/passengers/{id}")
-    public ResponseEntity<Void> delete(
-            @PathVariable Long id) {
-
+    public ResponseEntity<Void> delete(@PathVariable Long id) {
         passengerService.delete(id);
-
         return ResponseEntity.noContent().build();
     }
 

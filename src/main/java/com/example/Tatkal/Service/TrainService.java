@@ -1,5 +1,7 @@
 package com.example.Tatkal.Service;
 
+import com.example.Tatkal.Dto.TrainDTO;
+import com.example.Tatkal.Dto.TrainStopDTO;
 import com.example.Tatkal.Entity.Train;
 import com.example.Tatkal.Entity.TrainStop;
 
@@ -18,45 +20,55 @@ public class TrainService {
 
     private final TrainRepository trainRepository;
     private final TrainStopRepository trainStopRepository;
+    private final DTOMapperService mapperService;
 
     @Transactional
-    public Train create(Train train) {
-        return trainRepository.save(train);
+    public TrainDTO create(TrainDTO trainDTO) {
+        Train train = mapperService.toTrainEntity(trainDTO);
+        Train savedTrain = trainRepository.save(train);
+        return mapperService.toTrainDTO(savedTrain);
     }
 
     @Transactional(readOnly = true)
-    public List<Train> getAll() {
-        return trainRepository.findAll();
+    public List<TrainDTO> getAll() {
+        List<Train> trains = trainRepository.findAll();
+        return mapperService.toTrainDTOList(trains);
     }
 
     @Transactional(readOnly = true)
-    public Train getById(Long number) {
+    public TrainDTO getById(Long number) {
 
-        return trainRepository.findById(number)
+        Train train = trainRepository.findById(number)
                 .orElseThrow(() ->
                         new RuntimeException("Train not found")
                 );
+
+        return mapperService.toTrainDTO(train);
     }
 
     @Transactional(readOnly = true)
-    public List<Train> search(Long from, Long to, LocalDate date) {
+    public List<TrainDTO> search(Long from, Long to, LocalDate date) {
         if (from.equals(to)) {
             throw new IllegalArgumentException(
                     "From and To stations cannot be same"
             );
         }
-        return trainRepository
-                .searchTrains(from,to,date);
+        List<Train> trains = trainRepository.searchTrains(from,to,date);
+        return mapperService.toTrainDTOList(trains);
     }
 
     @Transactional
-    public Train update(Long number, Train updated) {
+    public TrainDTO update(Long number, TrainDTO updatedDTO) {
 
-        Train train = getById(number);
+        Train train = trainRepository.findById(number)
+                .orElseThrow(() ->
+                        new RuntimeException("Train not found")
+                );
 
-        train.setName(updated.getName());
+        train.setName(updatedDTO.getName());
 
-        return trainRepository.save(train);
+        Train savedTrain = trainRepository.save(train);
+        return mapperService.toTrainDTO(savedTrain);
     }
 
     @Transactional
@@ -70,9 +82,9 @@ public class TrainService {
     }
 
     @Transactional(readOnly = true)
-    public List<TrainStop> getStops(Long trainNumber) {
+    public List<TrainStopDTO> getStops(Long trainNumber) {
 
-        return trainStopRepository
-                .findStopsByTrain(trainNumber);
+        List<TrainStop> trainStops = trainStopRepository.findStopsByTrain(trainNumber);
+        return mapperService.toTrainStopDTOList(trainStops);
     }
 }

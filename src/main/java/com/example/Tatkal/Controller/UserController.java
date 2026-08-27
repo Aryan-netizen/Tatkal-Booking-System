@@ -1,6 +1,7 @@
 package com.example.Tatkal.Controller;
 
-import com.example.Tatkal.Entity.Users;
+import com.example.Tatkal.Dto.UserCreateDTO;
+import com.example.Tatkal.Dto.UsersDTO;
 import com.example.Tatkal.Service.UserService;
 import jakarta.validation.Valid;
 import java.util.List;
@@ -18,7 +19,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 
 @RestController
-@RequestMapping(value = "/api/userss", produces = MediaType.APPLICATION_JSON_VALUE)
+@RequestMapping(value = "/api/users", produces = MediaType.APPLICATION_JSON_VALUE)
 public class UserController {
 
     private final UserService usersService;
@@ -28,31 +29,31 @@ public class UserController {
     }
 
     @GetMapping
-    public ResponseEntity<List<Users>> getAllUsers() {
+    public ResponseEntity<List<UsersDTO>> getAllUsers() {
         return ResponseEntity.ok(usersService.findAll());
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Users> getUsers(@PathVariable(name = "id") final Long id) {
+    public ResponseEntity<UsersDTO> getUsers(@PathVariable(name = "id") final Long id) {
         return ResponseEntity.ok(usersService.getById(id));
     }
 
-    @GetMapping("/email/{id}")
-    public ResponseEntity<Users> getUsers(@PathVariable(name = "id") final String id) {
-        return ResponseEntity.ok(usersService.getByEmail(id));
+    @GetMapping("/email/{email}")
+    public ResponseEntity<UsersDTO> getUsersByEmail(@PathVariable(name = "email") final String email) {
+        return ResponseEntity.ok(usersService.getByEmail(email));
     }
 
     @PostMapping
-    public ResponseEntity<Users> createUsers(@RequestBody @Valid final Users user) {
-        final Users createdId = usersService.create(user);
-        return new ResponseEntity<>(createdId, HttpStatus.CREATED);
+    public ResponseEntity<UsersDTO> createUsers(@RequestBody @Valid final UserCreateDTO userCreateDTO) {
+        final UsersDTO createdUser = usersService.create(userCreateDTO);
+        return new ResponseEntity<>(createdUser, HttpStatus.CREATED);
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Long> updateUsers(@PathVariable(name = "id") final Long id,
-                                            @RequestBody @Valid final Users user) {
-        usersService.update(id, user);
-        return ResponseEntity.ok(id);
+    public ResponseEntity<UsersDTO> updateUsers(@PathVariable(name = "id") final Long id,
+                                            @RequestBody @Valid final UsersDTO usersDTO) {
+        UsersDTO updatedUser = usersService.update(id, usersDTO);
+        return ResponseEntity.ok(updatedUser);
     }
 
     @DeleteMapping("/{id}")

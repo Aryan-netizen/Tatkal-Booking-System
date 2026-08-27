@@ -1,5 +1,6 @@
 package com.example.Tatkal.Entity;
 
+import com.example.Tatkal.Dto.TrainDTO;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -45,5 +46,6 @@ public class Trip {
 
     @OneToMany(mappedBy = "trip")
     private Set<Booking> tripBookings = new HashSet<>();
+
 
 }

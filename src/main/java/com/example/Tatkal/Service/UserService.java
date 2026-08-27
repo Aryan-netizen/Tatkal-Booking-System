@@ -1,11 +1,14 @@
 package com.example.Tatkal.Service;
 
+import com.example.Tatkal.Dto.UserCreateDTO;
+import com.example.Tatkal.Dto.UsersDTO;
 import com.example.Tatkal.Entity.Users;
 import com.example.Tatkal.Repositry.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.OffsetDateTime;
 import java.util.List;
 
 @Service
@@ -13,59 +16,75 @@ import java.util.List;
 public class UserService {
 
     private final UserRepository usersRepository;
+    private final DTOMapperService mapperService;
 
     @Transactional
-    public Users create(Users user) {
+    public UsersDTO create(UserCreateDTO createDTO) {
 
-        if (usersRepository.existsByEmail(user.getEmail())) {
+        if (usersRepository.existsByEmail(createDTO.getEmail())) {
             throw new RuntimeException(
                     "Email already exists"
             );
         }
 
-        return usersRepository.save(user);
+        Users user = mapperService.toUserEntity(createDTO);
+        user.setCreatedAt(OffsetDateTime.now());
+        // TODO: Hash password properly before saving
+        // user.setPasswordHash(passwordEncoder.encode(createDTO.getPassword()));
+
+        Users savedUser = usersRepository.save(user);
+        return mapperService.toUserDTO(savedUser);
     }
 
     @Transactional(readOnly = true)
-    public Users getById(Long id) {
+    public UsersDTO getById(Long id) {
 
-        return usersRepository.findById(id)
+        Users user = usersRepository.findById(id)
                 .orElseThrow(() ->
                         new RuntimeException(
                                 "User not found"
                         )
                 );
+
+        return mapperService.toUserDTO(user);
     }
 
     @Transactional(readOnly = true)
-    public List<Users> findAll() {
+    public List<UsersDTO> findAll() {
 
-        return usersRepository.findAll();
+        List<Users> users = usersRepository.findAll();
+        return mapperService.toUserDTOList(users);
 
     }
 
     @Transactional(readOnly = true)
-    public Users getByEmail(String email) {
+    public UsersDTO getByEmail(String email) {
 
-        return usersRepository.findByEmail(email)
+        Users user = usersRepository.findByEmail(email)
                 .orElseThrow(() ->
                         new RuntimeException(
                                 "User not found"
                         )
                 );
+
+        return mapperService.toUserDTO(user);
     }
 
     @Transactional
-    public Users update(
-            Long id,
-            Users updated
-    ) {
+    public UsersDTO update(Long id, UsersDTO updatedDTO) {
 
-        Users user = getById(id);
+        Users user = usersRepository.findById(id)
+                .orElseThrow(() ->
+                        new RuntimeException(
+                                "User not found"
+                        )
+                );
 
-        user.setName(updated.getName());
+        user.setName(updatedDTO.getName());
+        user.setEmail(updatedDTO.getEmail());
 
-        return usersRepository.save(user);
+        Users savedUser = usersRepository.save(user);
+        return mapperService.toUserDTO(savedUser);
     }
 
     @Transactional

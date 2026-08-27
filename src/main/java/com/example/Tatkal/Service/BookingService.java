@@ -1,14 +1,21 @@
 package com.example.Tatkal.Service;
 
+import com.example.Tatkal.Dto.BookingCreateDTO;
+import com.example.Tatkal.Dto.BookingDTO;
+import com.example.Tatkal.Dto.BookingResponseDTO;
 import com.example.Tatkal.Entity.Booking;
 import com.example.Tatkal.Entity.Seat;
 import com.example.Tatkal.Entity.Trip;
 import com.example.Tatkal.Entity.Users;
+import com.example.Tatkal.Entity.Passenger;
+import com.example.Tatkal.Entity.Payment;
 
 import com.example.Tatkal.Repositry.BookingRepository;
 import com.example.Tatkal.Repositry.SeatRepository;
 import com.example.Tatkal.Repositry.TripRepository;
 import com.example.Tatkal.Repositry.UserRepository;
+import com.example.Tatkal.Repositry.PassengerRepository;
+import com.example.Tatkal.Repositry.PaymentRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -24,6 +31,9 @@ public class BookingService {
     private final SeatRepository seatRepository;
     private final TripRepository tripRepository;
     private final UserRepository usersRepository;
+    private final PassengerRepository passengerRepository;
+    private final PaymentRepository paymentRepository;
+    private final DTOMapperService mapperService;
 
     /*
      * THIS TRANSACTION IS THE IMPORTANT PART.
@@ -39,20 +49,13 @@ public class BookingService {
      * If anything fails, everything rolls back.
      */
     @Transactional
-    public Booking createBooking(
-            Long userId,
-            Long tripId,
-            Integer fromSeq,
-            Integer toSeq,
-            String classCode,
-            Long amountPaise
-    ) {
+    public BookingDTO createBooking(BookingCreateDTO createDTO) {
 
         // -----------------------------------------
         // 1. Validate user
         // -----------------------------------------
 
-        Users user = usersRepository.findById(userId)
+        Users user = usersRepository.findById(createDTO.getUserId())
                 .orElseThrow(() ->
                         new RuntimeException(
                                 "User not found"
@@ -63,7 +66,7 @@ public class BookingService {
         // 2. Validate trip
         // -----------------------------------------
 
-        Trip trip = tripRepository.findById(tripId)
+        Trip trip = tripRepository.findById(createDTO.getTripId())
                 .orElseThrow(() ->
                         new RuntimeException(
                                 "Trip not found"
@@ -74,7 +77,7 @@ public class BookingService {
         // 3. Validate route
         // -----------------------------------------
 
-        if (fromSeq >= toSeq) {
+        if (createDTO.getFromSeq() >= createDTO.getToSeq()) {
             throw new RuntimeException(
                     "Invalid journey route"
             );
@@ -87,8 +90,8 @@ public class BookingService {
         List<Seat> availableSeats =
                 seatRepository
                         .findAvailableSeatsForTripAndClassForUpdate(
-                                tripId,
-                                classCode
+                                createDTO.getTripId(),
+                                createDTO.getClassCode()
                         );
 
         if (availableSeats.isEmpty()) {
@@ -122,10 +125,10 @@ public class BookingService {
         booking.setTrip(trip);
         booking.setSeat(seat);
 
-        booking.setFromSeq(fromSeq);
-        booking.setToSeq(toSeq);
+        booking.setFromSeq(createDTO.getFromSeq());
+        booking.setToSeq(createDTO.getToSeq());
 
-        booking.setAmountPaise(amountPaise);
+        booking.setAmountPaise(createDTO.getAmountPaise());
 
         booking.setStatus("HELD");
 
@@ -133,7 +136,8 @@ public class BookingService {
                 OffsetDateTime.now()
         );
 
-        return bookingRepository.save(booking);
+        Booking savedBooking = bookingRepository.save(booking);
+        return mapperService.toBookingDTO(savedBooking);
     }
 
     // -----------------------------------------
@@ -141,16 +145,19 @@ public class BookingService {
     // -----------------------------------------
 
     @Transactional(readOnly = true)
-    public Booking getBooking(
-            Long bookingId
-    ) {
+    public BookingResponseDTO getBooking(Long bookingId) {
 
-        return bookingRepository.findById(bookingId)
+        Booking booking = bookingRepository.findById(bookingId)
                 .orElseThrow(() ->
                         new RuntimeException(
                                 "Booking not found"
                         )
                 );
+
+        List<Passenger> passengers = passengerRepository.findByBookingId(bookingId);
+        List<Payment> payments = paymentRepository.findByBookingId(bookingId);
+
+        return mapperService.toBookingResponseDTO(booking, passengers, payments);
     }
 
     // -----------------------------------------
@@ -158,12 +165,10 @@ public class BookingService {
     // -----------------------------------------
 
     @Transactional(readOnly = true)
-    public List<Booking> getUserBookings(
-            Long userId
-    ) {
+    public List<BookingDTO> getUserBookings(Long userId) {
 
-        return bookingRepository
-                .findByUserId(userId);
+        List<Booking> bookings = bookingRepository.findByUserId(userId);
+        return mapperService.toBookingDTOList(bookings);
     }
 
     // -----------------------------------------
@@ -171,12 +176,10 @@ public class BookingService {
     // -----------------------------------------
 
     @Transactional(readOnly = true)
-    public List<Booking> getTripBookings(
-            Long tripId
-    ) {
+    public List<BookingDTO> getTripBookings(Long tripId) {
 
-        return bookingRepository
-                .findByTripId(tripId);
+        List<Booking> bookings = bookingRepository.findByTripId(tripId);
+        return mapperService.toBookingDTOList(bookings);
     }
 
     // -----------------------------------------
@@ -184,9 +187,7 @@ public class BookingService {
     // -----------------------------------------
 
     @Transactional
-    public Booking cancelBooking(
-            Long bookingId
-    ) {
+    public BookingDTO cancelBooking(Long bookingId) {
 
         Booking booking =
                 bookingRepository.findById(bookingId)
@@ -218,11 +219,12 @@ public class BookingService {
 
         booking.setStatus("CANCELLED");
 
-        return bookingRepository.save(booking);
+        Booking savedBooking = bookingRepository.save(booking);
+        return mapperService.toBookingDTO(savedBooking);
     }
 
     @Transactional
-    public Booking confirmBooking(Long bookingId) {
+    public BookingDTO confirmBooking(Long bookingId) {
 
         Booking booking =
                 bookingRepository.findById(bookingId)
@@ -258,7 +260,8 @@ public class BookingService {
 
         seatRepository.save(seat);
 
-        return bookingRepository.save(booking);
+        Booking savedBooking = bookingRepository.save(booking);
+        return mapperService.toBookingDTO(savedBooking);
     }
 }
 

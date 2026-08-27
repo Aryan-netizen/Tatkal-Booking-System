@@ -1,5 +1,6 @@
 package com.example.Tatkal.Service;
 
+import com.example.Tatkal.Dto.StationDTO;
 import com.example.Tatkal.Entity.Station;
 import com.example.Tatkal.Repositry.StationRepository;
 import lombok.RequiredArgsConstructor;
@@ -13,39 +14,48 @@ import java.util.List;
 public class StationService {
 
     private final StationRepository stationRepository;
+    private final DTOMapperService mapperService;
 
     @Transactional
-    public Station create(Station station) {
-        return stationRepository.save(station);
+    public StationDTO create(StationDTO stationDTO) {
+        Station station = mapperService.toStationEntity(stationDTO);
+        Station savedStation = stationRepository.save(station);
+        return mapperService.toStationDTO(savedStation);
     }
 
     @Transactional(readOnly = true)
-    public List<Station> getAll() {
-        return stationRepository.findAll();
+    public List<StationDTO> getAll() {
+        List<Station> stations = stationRepository.findAll();
+        return mapperService.toStationDTOList(stations);
     }
 
     @Transactional(readOnly = true)
-    public Station getById(Long id) {
-        return stationRepository.findById(id)
+    public StationDTO getById(Long id) {
+        Station station = stationRepository.findById(id)
                 .orElseThrow(() ->
                         new RuntimeException("Station not found")
                 );
+        return mapperService.toStationDTO(station);
     }
 
     @Transactional(readOnly = true)
-    public List<Station> search(String name) {
-        return stationRepository
-                .findByNameContainingIgnoreCase(name);
+    public List<StationDTO> search(String name) {
+        List<Station> stations = stationRepository.findByNameContainingIgnoreCase(name);
+        return mapperService.toStationDTOList(stations);
     }
 
     @Transactional
-    public Station update(Long id, Station updated) {
+    public StationDTO update(Long id, StationDTO updatedDTO) {
 
-        Station station = getById(id);
+        Station station = stationRepository.findById(id)
+                .orElseThrow(() ->
+                        new RuntimeException("Station not found")
+                );
 
-        station.setName(updated.getName());
+        station.setName(updatedDTO.getName());
 
-        return stationRepository.save(station);
+        Station savedStation = stationRepository.save(station);
+        return mapperService.toStationDTO(savedStation);
     }
 
     @Transactional

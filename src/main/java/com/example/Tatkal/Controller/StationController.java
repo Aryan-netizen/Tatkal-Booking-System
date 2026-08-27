@@ -1,7 +1,6 @@
 package com.example.Tatkal.Controller;
 
 import com.example.Tatkal.Dto.StationDTO;
-import com.example.Tatkal.Entity.Station;
 import com.example.Tatkal.Service.StationService;
 import jakarta.validation.Valid;
 import java.util.List;
@@ -22,36 +21,31 @@ public class StationController {
     }
 
     @GetMapping
-    public ResponseEntity<List<Station>> getAll(
-            @RequestParam(required = false) String search) {
+    public ResponseEntity<List<StationDTO>> getAll(@RequestParam(required = false) String search) {
 
         if (search != null && !search.isBlank()) {
-            return ResponseEntity.ok(
-                    stationService.search(search)
-            );
+            return ResponseEntity.ok(stationService.search(search));
         }
 
-        return ResponseEntity.ok(
-                stationService.getAll()
-        );
+        return ResponseEntity.ok(stationService.getAll());
     }
 
     @GetMapping("/{code}")
-    public ResponseEntity<Station> getStation(@PathVariable(name = "code") final Long code) throws Exception {
+    public ResponseEntity<StationDTO> getStation(@PathVariable(name = "code") final Long code) throws Exception {
         return ResponseEntity.ok(stationService.getById(code));
     }
 
     @PostMapping
-    public ResponseEntity<Station> createStation(@RequestBody @Valid final Station station) {
-        final Station createdCode = stationService.create(station);
-        return new ResponseEntity<>(createdCode, HttpStatus.CREATED);
+    public ResponseEntity<StationDTO> createStation(@RequestBody @Valid final StationDTO stationDTO) {
+        final StationDTO createdStation = stationService.create(stationDTO);
+        return new ResponseEntity<>(createdStation, HttpStatus.CREATED);
     }
 
     @PutMapping("/{code}")
-    public ResponseEntity<Long> updateStation(@PathVariable(name = "code") final Long code,
-                                              @RequestBody @Valid final Station station) throws Exception {
-        stationService.update(code, station);
-        return ResponseEntity.ok(code);
+    public ResponseEntity<StationDTO> updateStation(@PathVariable(name = "code") final Long code,
+                                              @RequestBody @Valid final StationDTO stationDTO) throws Exception {
+        StationDTO updatedStation = stationService.update(code, stationDTO);
+        return ResponseEntity.ok(updatedStation);
     }
 
     @DeleteMapping("/{code}")

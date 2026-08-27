@@ -1,15 +1,14 @@
 package com.example.Tatkal.Controller;
 
 
-import com.example.Tatkal.Entity.Train;
-import com.example.Tatkal.Entity.TrainStop;
+import com.example.Tatkal.Dto.TrainDTO;
+import com.example.Tatkal.Dto.TrainStopDTO;
 import com.example.Tatkal.Service.TrainService;
 import jakarta.validation.Valid;
 
 import java.time.LocalDate;
 import java.util.List;
 
-import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -27,41 +26,41 @@ public class TrainController {
     }
 
     @GetMapping
-    public ResponseEntity<List<Train>> getAllTrains() {
+    public ResponseEntity<List<TrainDTO>> getAllTrains() {
         return ResponseEntity.ok(trainService.getAll());
     }
 
     @GetMapping("/{number}")
-    public ResponseEntity<Train> getTrain(@PathVariable(name = "number") final Long number) throws Exception {
+    public ResponseEntity<TrainDTO> getTrain(@PathVariable(name = "number") final Long number) throws Exception {
         return ResponseEntity.ok(trainService.getById(number));
     }
 
     @GetMapping("/{number}/stops")
-    public ResponseEntity<List<TrainStop>> getStops(@PathVariable(name = "number") final Long number) throws Exception {
+    public ResponseEntity<List<TrainStopDTO>> getStops(@PathVariable(name = "number") final Long number) throws Exception {
         return ResponseEntity.ok(trainService.getStops(number));
     }
 
     @GetMapping("/search")
-    public ResponseEntity<List<Train>> searchTrains(
+    public ResponseEntity<List<TrainDTO>> searchTrains(
             @RequestParam(name = "from") Long from,
             @RequestParam(name = "to") Long to,
             @RequestParam(name = "date") String date) {
 
-        LocalDate dates= LocalDate.parse(date);
-        return ResponseEntity.ok(trainService.search(from,to,dates));
+        LocalDate dates = LocalDate.parse(date);
+        return ResponseEntity.ok(trainService.search(from, to, dates));
     }
 
     @PostMapping
-    public ResponseEntity<Train> create(@RequestBody @Valid final Train train) {
-        final Train createdNumber = trainService.create(train);
-        return new ResponseEntity<>(createdNumber, HttpStatus.CREATED);
+    public ResponseEntity<TrainDTO> create(@RequestBody @Valid final TrainDTO trainDTO) {
+        final TrainDTO createdTrain = trainService.create(trainDTO);
+        return new ResponseEntity<>(createdTrain, HttpStatus.CREATED);
     }
 
     @PutMapping("/{number}")
-    public ResponseEntity<Long> updateTrain(@PathVariable(name = "number") final Long number,
-                                            @RequestBody @Valid final Train train) {
-        trainService.update(number, train);
-        return ResponseEntity.ok(number);
+    public ResponseEntity<TrainDTO> updateTrain(@PathVariable(name = "number") final Long number,
+                                            @RequestBody @Valid final TrainDTO trainDTO) {
+        TrainDTO updatedTrain = trainService.update(number, trainDTO);
+        return ResponseEntity.ok(updatedTrain);
     }
 
     @DeleteMapping("/{number}")

@@ -1,6 +1,9 @@
 package com.example.Tatkal.Service;
 
+import com.example.Tatkal.Dto.SeatDTO;
+import com.example.Tatkal.Entity.Coach;
 import com.example.Tatkal.Entity.Seat;
+import com.example.Tatkal.Repositry.CoachRepository;
 import com.example.Tatkal.Repositry.SeatRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -13,59 +16,82 @@ import java.util.List;
 public class SeatService {
 
     private final SeatRepository seatRepository;
+    private final CoachRepository coachRepository;
+    private final DTOMapperService mapperService;
 
     @Transactional
-    public Seat create(Seat seat) {
+    public SeatDTO create(SeatDTO seatDTO) {
+        Coach coach = coachRepository.findById(seatDTO.getCoachId())
+                .orElseThrow(() -> new RuntimeException("Coach not found"));
+
+        Seat seat = mapperService.toSeatEntity(seatDTO, coach);
 
         if (seat.getStatus() == null) {
             seat.setStatus("AVAILABLE");
         }
 
-        return seatRepository.save(seat);
+        Seat savedSeat = seatRepository.save(seat);
+        return mapperService.toSeatDTO(savedSeat);
     }
 
     @Transactional(readOnly = true)
-    public Seat getById(Long id) {
+    public SeatDTO getById(Long id) {
 
-        return seatRepository.findById(id)
+        Seat seat = seatRepository.findById(id)
                 .orElseThrow(() ->
                         new RuntimeException("Seat not found")
                 );
+
+        return mapperService.toSeatDTO(seat);
     }
+    
     @Transactional(readOnly = true)
-    public List<Seat> findAll() {
+    public List<SeatDTO> findAll() {
 
-        return seatRepository.findAll();
+        List<Seat> seats = seatRepository.findAll();
+        return mapperService.toSeatDTOList(seats);
 
-    }
-
-    @Transactional(readOnly = true)
-    public List<Seat> getByCoach(Long coachId) {
-
-        return seatRepository.findByCoachId(coachId);
     }
 
     @Transactional(readOnly = true)
-    public List<Seat> getAvailableSeats(Long coachId) {
+    public List<SeatDTO> getByCoach(Long coachId) {
 
-        return seatRepository.findByCoachIdAndStatus(
+        List<Seat> seats = seatRepository.findByCoachId(coachId);
+        return mapperService.toSeatDTOList(seats);
+    }
+
+    @Transactional(readOnly = true)
+    public List<SeatDTO> getAvailableSeats(Long coachId) {
+
+        List<Seat> seats = seatRepository.findByCoachIdAndStatus(
                 coachId,
                 "AVAILABLE"
         );
+        return mapperService.toSeatDTOList(seats);
     }
 
     @Transactional
-    public Seat update(Long id, Seat updated) {
+    public SeatDTO update(Long id, SeatDTO updatedDTO) {
 
-        Seat seat = getById(id);
+        Seat seat = seatRepository.findById(id)
+                .orElseThrow(() ->
+                        new RuntimeException("Seat not found")
+                );
 
-        seat.setSeatNumber(updated.getSeatNumber());
-        seat.setBerthType(updated.getBerthType());
+        seat.setSeatNumber(updatedDTO.getSeatNumber());
+        seat.setBerthType(updatedDTO.getBerthType());
+
+        if (!seat.getCoach().getId().equals(updatedDTO.getCoachId())) {
+            Coach coach = coachRepository.findById(updatedDTO.getCoachId())
+                    .orElseThrow(() -> new RuntimeException("Coach not found"));
+            seat.setCoach(coach);
+        }
 
         /*
          * Don't allow ordinary CRUD to manipulate booking status.
          */
-        return seatRepository.save(seat);
+        Seat savedSeat = seatRepository.save(seat);
+        return mapperService.toSeatDTO(savedSeat);
     }
 
     @Transactional
@@ -82,7 +108,7 @@ public class SeatService {
      * LOCKED OPERATION
      */
     @Transactional
-    public Seat lockAvailableSeat(
+    public SeatDTO lockAvailableSeat(
             Long tripId,
             String classCode
     ) {
@@ -104,6 +130,7 @@ public class SeatService {
 
         seat.setStatus("HELD");
 
-        return seatRepository.save(seat);
+        Seat savedSeat = seatRepository.save(seat);
+        return mapperService.toSeatDTO(savedSeat);
     }
 }

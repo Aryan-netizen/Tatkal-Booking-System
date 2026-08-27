@@ -1,6 +1,5 @@
 package com.example.Tatkal.Dto;
 
-import com.example.Tatkal.Entity.Coach;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -26,6 +25,6 @@ public class SeatDTO {
     private String status;
 
     @NotNull
-    private Coach coach;
+    private Long coachId;
 
 }

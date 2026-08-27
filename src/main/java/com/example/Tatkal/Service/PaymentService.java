@@ -1,5 +1,6 @@
 package com.example.Tatkal.Service;
 
+import com.example.Tatkal.Dto.PaymentDTO;
 import com.example.Tatkal.Entity.Booking;
 import com.example.Tatkal.Entity.Payment;
 
@@ -17,12 +18,10 @@ public class PaymentService {
 
     private final PaymentRepository paymentRepository;
     private final BookingRepository bookingRepository;
+    private final DTOMapperService mapperService;
 
     @Transactional
-    public Payment createPayment(
-            Long bookingId,
-            Long amountPaise
-    ) {
+    public PaymentDTO createPayment(Long bookingId, Long amountPaise) {
 
         Booking booking = bookingRepository.findById(bookingId)
                 .orElseThrow(() ->
@@ -44,13 +43,14 @@ public class PaymentService {
         payment.setStatus("PENDING");
         payment.setCreatedAt(OffsetDateTime.now());
 
-        return paymentRepository.save(payment);
+        Payment savedPayment = paymentRepository.save(payment);
+        return mapperService.toPaymentDTO(savedPayment);
     }
 
     @Transactional(readOnly = true)
-    public Payment getPayment(Long bookingId) {
+    public PaymentDTO getPayment(Long bookingId) {
 
-        return paymentRepository
+        Payment payment = paymentRepository
                 .findFirstByBookingIdOrderByCreatedAtDesc(
                         bookingId
                 )
@@ -59,6 +59,19 @@ public class PaymentService {
                                 "Payment not found"
                         )
                 );
+
+        return mapperService.toPaymentDTO(payment);
+    }
+
+    @Transactional(readOnly = true)
+    public PaymentDTO getById(Long id) {
+
+        Payment payment = paymentRepository.findById(id)
+                .orElseThrow(() ->
+                        new RuntimeException("Payment not found")
+                );
+
+        return mapperService.toPaymentDTO(payment);
     }
 
     /*
@@ -66,9 +79,7 @@ public class PaymentService {
      * signature from Razorpay/Stripe/etc.
      */
     @Transactional
-    public void processPaymentSuccess(
-            String transactionId
-    ) {
+    public void processPaymentSuccess(String transactionId) {
 
         Payment payment =
                 paymentRepository

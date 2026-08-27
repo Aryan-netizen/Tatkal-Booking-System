@@ -1,6 +1,6 @@
 package com.example.Tatkal.Controller;
 
-import com.example.Tatkal.Entity.Seat;
+import com.example.Tatkal.Dto.SeatDTO;
 import com.example.Tatkal.Service.SeatService;
 import jakarta.validation.Valid;
 import java.util.List;
@@ -28,36 +28,36 @@ public class SeatController {
     }
 
     @GetMapping
-    public ResponseEntity<List<Seat>> getAllSeats() {
+    public ResponseEntity<List<SeatDTO>> getAllSeats() {
         return ResponseEntity.ok(seatService.findAll());
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Seat> getSeat(@PathVariable(name = "id") final Long id) {
+    public ResponseEntity<SeatDTO> getSeat(@PathVariable(name = "id") final Long id) {
         return ResponseEntity.ok(seatService.getById(id));
     }
 
     @GetMapping("/coach/{CoachId}")
-    public ResponseEntity<List<Seat>> getByCoach(@PathVariable(name = "CoachId") final Long id) {
+    public ResponseEntity<List<SeatDTO>> getByCoach(@PathVariable(name = "CoachId") final Long id) {
         return ResponseEntity.ok(seatService.getByCoach(id));
     }
 
-    @GetMapping("/avail/{CoachId}")
-    public ResponseEntity<List<Seat>> getAvailableSeats(@PathVariable(name = "CoachId") final Long id) {
+    @GetMapping("/available/{CoachId}")
+    public ResponseEntity<List<SeatDTO>> getAvailableSeats(@PathVariable(name = "CoachId") final Long id) {
         return ResponseEntity.ok(seatService.getAvailableSeats(id));
     }
 
     @PostMapping
-    public ResponseEntity<Seat> create(@RequestBody @Valid final Seat seat) {
-        final Seat createdId = seatService.create(seat);
-        return new ResponseEntity<>(createdId, HttpStatus.CREATED);
+    public ResponseEntity<SeatDTO> create(@RequestBody @Valid final SeatDTO seatDTO) {
+        final SeatDTO createdSeat = seatService.create(seatDTO);
+        return new ResponseEntity<>(createdSeat, HttpStatus.CREATED);
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Long> updateSeat(@PathVariable(name = "id") final Long id,
-                                           @RequestBody @Valid final Seat seat) {
-        seatService.update(id, seat);
-        return ResponseEntity.ok(id);
+    public ResponseEntity<SeatDTO> updateSeat(@PathVariable(name = "id") final Long id,
+                                           @RequestBody @Valid final SeatDTO seatDTO) {
+        SeatDTO updatedSeat = seatService.update(id, seatDTO);
+        return ResponseEntity.ok(updatedSeat);
     }
 
     @DeleteMapping("/{id}")

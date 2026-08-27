@@ -1,5 +1,6 @@
 package com.example.Tatkal.Service;
 
+import com.example.Tatkal.Dto.PassengerDTO;
 import com.example.Tatkal.Entity.Booking;
 import com.example.Tatkal.Entity.Passenger;
 
@@ -17,49 +18,53 @@ public class PassengerService {
 
     private final PassengerRepository passengerRepository;
     private final BookingRepository bookingRepository;
+    private final DTOMapperService mapperService;
 
     @Transactional
-    public Passenger create(
-            Long bookingId,
-            Passenger passenger
-    ) {
+    public PassengerDTO create(PassengerDTO passengerDTO) {
 
-        Booking booking = bookingRepository.findById(bookingId)
+        Booking booking = bookingRepository.findById(passengerDTO.getBooking())
                 .orElseThrow(() ->
                         new RuntimeException("Booking not found")
                 );
 
-        passenger.setBooking(booking);
-
-        return passengerRepository.save(passenger);
+        Passenger passenger = mapperService.toPassengerEntity(passengerDTO, booking);
+        Passenger savedPassenger = passengerRepository.save(passenger);
+        return mapperService.toPassengerDTO(savedPassenger);
     }
 
     @Transactional(readOnly = true)
-    public List<Passenger> getByBooking(Long bookingId) {
+    public List<PassengerDTO> getByBooking(Long bookingId) {
 
-        return passengerRepository
-                .findByBookingId(bookingId);
+        List<Passenger> passengers = passengerRepository.findByBookingId(bookingId);
+        return mapperService.toPassengerDTOList(passengers);
+    }
+
+    @Transactional(readOnly = true)
+    public PassengerDTO getById(Long id) {
+        
+        Passenger passenger = passengerRepository.findById(id)
+                .orElseThrow(() ->
+                        new RuntimeException("Passenger not found")
+                );
+        
+        return mapperService.toPassengerDTO(passenger);
     }
 
     @Transactional
-    public Passenger update(
-            Long id,
-            Passenger updated
-    ) {
+    public PassengerDTO update(Long id, PassengerDTO updatedDTO) {
 
-        Passenger passenger =
-                passengerRepository.findById(id)
-                        .orElseThrow(() ->
-                                new RuntimeException(
-                                        "Passenger not found"
-                                )
-                        );
+        Passenger passenger = passengerRepository.findById(id)
+                .orElseThrow(() ->
+                        new RuntimeException("Passenger not found")
+                );
 
-        passenger.setName(updated.getName());
-        passenger.setAge(updated.getAge());
-        passenger.setGender(updated.getGender());
+        passenger.setName(updatedDTO.getName());
+        passenger.setAge(updatedDTO.getAge());
+        passenger.setGender(updatedDTO.getGender());
 
-        return passengerRepository.save(passenger);
+        Passenger savedPassenger = passengerRepository.save(passenger);
+        return mapperService.toPassengerDTO(savedPassenger);
     }
 
     @Transactional

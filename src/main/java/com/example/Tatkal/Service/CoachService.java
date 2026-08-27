@@ -1,61 +1,84 @@
 package com.example.Tatkal.Service;
 
+import com.example.Tatkal.Dto.CoachDTO;
 import com.example.Tatkal.Entity.Coach;
-import com.example.Tatkal.Entity.Seat;
+import com.example.Tatkal.Entity.Trip;
 import com.example.Tatkal.Repositry.CoachRepository;
+import com.example.Tatkal.Repositry.TripRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
 public class CoachService {
 
     private final CoachRepository coachRepository;
+    private final TripRepository tripRepository;
+    private final DTOMapperService mapperService;
 
     @Transactional
-    public Coach create(Coach coach) {
-        return coachRepository.save(coach);
+    public CoachDTO create(CoachDTO coachDTO) {
+        Trip trip = tripRepository.findById(coachDTO.getTripId())
+                .orElseThrow(() -> new RuntimeException("Trip not found"));
+
+        Coach coach = mapperService.toCoachEntity(coachDTO, trip);
+        Coach savedCoach = coachRepository.save(coach);
+        return mapperService.toCoachDTO(savedCoach);
     }
 
     @Transactional(readOnly = true)
-    public Coach getById(Long id) {
+    public CoachDTO getById(Long id) {
 
-        return coachRepository.findById(id)
+        Coach coach = coachRepository.findById(id)
                 .orElseThrow(() ->
                         new RuntimeException("Coach not found")
                 );
+
+        return mapperService.toCoachDTO(coach);
     }
 
     @Transactional(readOnly = true)
-    public List<Coach> getByTrip(Long tripId) {
+    public List<CoachDTO> getByTrip(Long tripId) {
 
-        return coachRepository.findByTripId(tripId);
+        List<Coach> coaches = coachRepository.findByTripId(tripId);
+        return mapperService.toCoachDTOList(coaches);
     }
+    
     @Transactional(readOnly = true)
-    public List<Coach> findAll() {
+    public List<CoachDTO> findAll() {
 
-        return coachRepository.findAll();
+        List<Coach> coaches = coachRepository.findAll();
+        return mapperService.toCoachDTOList(coaches);
     }
 
     @Transactional(readOnly = true)
-    public Coach getSeats(Long tripId) {
+    public CoachDTO getSeats(Long tripId) {
 
-        return coachRepository.findCoachBySeatId(tripId).get();
+        Coach coach = coachRepository.findCoachBySeatId(tripId)
+                .orElseThrow(() -> new RuntimeException("Coach not found"));
+        return mapperService.toCoachDTO(coach);
     }
 
     @Transactional
-    public Coach update(Long id, Coach updated) {
+    public CoachDTO update(Long id, CoachDTO updatedDTO) {
 
-        Coach coach = getById(id);
+        Coach coach = coachRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Coach not found"));
 
-        coach.setCode(updated.getCode());
-        coach.setClassCode(updated.getClassCode());
+        coach.setCode(updatedDTO.getCode());
+        coach.setClassCode(updatedDTO.getClassCode());
 
-        return coachRepository.save(coach);
+        if (!coach.getTrip().getId().equals(updatedDTO.getTripId())) {
+            Trip trip = tripRepository.findById(updatedDTO.getTripId())
+                    .orElseThrow(() -> new RuntimeException("Trip not found"));
+            coach.setTrip(trip);
+        }
+
+        Coach savedCoach = coachRepository.save(coach);
+        return mapperService.toCoachDTO(savedCoach);
     }
 
     @Transactional

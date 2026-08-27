@@ -1,6 +1,6 @@
 package com.example.Tatkal.Controller;
 
-import com.example.Tatkal.Entity.Trip;
+import com.example.Tatkal.Dto.TripDTO;
 import com.example.Tatkal.Service.TripService;
 import jakarta.validation.Valid;
 
@@ -23,40 +23,45 @@ public class TripController {
     }
 
     @GetMapping
-    public ResponseEntity<List<Trip>> getAllTrips() {
+    public ResponseEntity<List<TripDTO>> getAllTrips() {
         return ResponseEntity.ok(tripService.findAll());
     }
 
+    @GetMapping("/{id}")
+    public ResponseEntity<TripDTO> getTrip(@PathVariable(name = "id") final Long id) {
+        return ResponseEntity.ok(tripService.getById(id));
+    }
+
     @GetMapping("/train/{id}")
-    public ResponseEntity<List<Trip>> getTripByTrain(@PathVariable(name = "id") final Long id) {
+    public ResponseEntity<List<TripDTO>> getTripByTrain(@PathVariable(name = "id") final Long id) {
         return ResponseEntity.ok(tripService.getByTrain(id));
     }
 
     @GetMapping("/date/{date}")
-    public ResponseEntity<List<Trip>> getTripByDate(@PathVariable(name = "date") final String date) {
-        LocalDate dates= LocalDate.parse(date);
+    public ResponseEntity<List<TripDTO>> getTripByDate(@PathVariable(name = "date") final String date) {
+        LocalDate dates = LocalDate.parse(date);
         return ResponseEntity.ok(tripService.getByDate(dates));
     }
 
     @GetMapping("/train/{trainId}/date/{date}")
-    public ResponseEntity<List<Trip>> getTripByTrainAndDate(
+    public ResponseEntity<List<TripDTO>> getTripByTrainAndDate(
             @PathVariable(name = "trainId") final Long id,
             @PathVariable(name = "date") final String date) {
-        LocalDate dates= LocalDate.parse(date);
-        return ResponseEntity.ok(tripService.getByTrainAndDate(id,dates));
+        LocalDate dates = LocalDate.parse(date);
+        return ResponseEntity.ok(tripService.getByTrainAndDate(id, dates));
     }
 
     @PostMapping
-    public ResponseEntity<Trip> create(@RequestBody @Valid final Trip trip) {
-        final Trip createdId = tripService.create(trip);
-        return new ResponseEntity<>(createdId, HttpStatus.CREATED);
+    public ResponseEntity<TripDTO> create(@RequestBody @Valid final TripDTO tripDTO) {
+        final TripDTO createdTrip = tripService.create(tripDTO);
+        return new ResponseEntity<>(createdTrip, HttpStatus.CREATED);
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Long> updateTrip(@PathVariable(name = "id") final Long id,
-                                           @RequestBody @Valid final Trip trip) {
-        tripService.update(id, trip);
-        return ResponseEntity.ok(id);
+    public ResponseEntity<TripDTO> updateTrip(@PathVariable(name = "id") final Long id,
+                                           @RequestBody @Valid final TripDTO tripDTO) {
+        TripDTO updatedTrip = tripService.update(id, tripDTO);
+        return ResponseEntity.ok(updatedTrip);
     }
 
     @DeleteMapping("/{id}")

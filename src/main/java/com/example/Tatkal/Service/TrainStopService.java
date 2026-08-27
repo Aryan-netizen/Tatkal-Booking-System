@@ -1,5 +1,6 @@
 package com.example.Tatkal.Service;
 
+import com.example.Tatkal.Dto.TrainStopDTO;
 import com.example.Tatkal.Entity.Station;
 import com.example.Tatkal.Entity.Train;
 import com.example.Tatkal.Entity.TrainStop;
@@ -20,59 +21,73 @@ public class TrainStopService {
     private final TrainStopRepository trainStopRepository;
     private final TrainRepository trainRepository;
     private final StationRepository stationRepository;
+    private final DTOMapperService mapperService;
 
     @Transactional
-    public TrainStop create(
-            Long trainNumber,
-            Long stationCode,
-            TrainStop stop
-    ) {
+    public TrainStopDTO create(TrainStopDTO trainStopDTO) {
 
-        Train train = trainRepository.findById(trainNumber)
+        Train train = trainRepository.findById(trainStopDTO.getTrainNumber())
                 .orElseThrow(() ->
                         new RuntimeException("Train not found")
                 );
 
-        Station station = stationRepository.findById(stationCode)
+        Station station = stationRepository.findById(trainStopDTO.getStationCode())
                 .orElseThrow(() ->
                         new RuntimeException("Station not found")
                 );
 
-        stop.setTrain(train);
-        stop.setStation(station);
-
-        return trainStopRepository.save(stop);
+        TrainStop trainStop = mapperService.toTrainStopEntity(trainStopDTO, train, station);
+        TrainStop savedTrainStop = trainStopRepository.save(trainStop);
+        return mapperService.toTrainStopDTO(savedTrainStop);
     }
 
     @Transactional(readOnly = true)
-    public List<TrainStop> getByTrain(Long trainNumber) {
-
-        return trainStopRepository
-                .findStopsByTrain(trainNumber);
+    public List<TrainStopDTO> getByTrain(Long trainNumber) {
+        List<TrainStop> trainStops = trainStopRepository.findStopsByTrain(trainNumber);
+        return mapperService.toTrainStopDTOList(trainStops);
     }
 
     @Transactional(readOnly = true)
-    public List<TrainStop> getBySeq(Long trainNumber) {
+    public List<TrainStopDTO> getBySeq(Long trainNumber) {
+        List<TrainStop> trainStops = trainStopRepository.findStopsByTrain(trainNumber);
+        return mapperService.toTrainStopDTOList(trainStops);
+    }
 
-        return trainStopRepository
-                .findStopsByTrain(trainNumber);
+    @Transactional(readOnly = true)
+    public TrainStopDTO getById(Integer id) {
+        TrainStop trainStop = trainStopRepository.findById(id)
+                .orElseThrow(() ->
+                        new RuntimeException("Train stop not found")
+                );
+        return mapperService.toTrainStopDTO(trainStop);
     }
 
     @Transactional
-    public TrainStop update(
-            Integer id,
-            TrainStop updated
-    ) {
+    public TrainStopDTO update(Integer id, TrainStopDTO updatedDTO) {
 
         TrainStop stop = trainStopRepository.findById(id)
                 .orElseThrow(() ->
                         new RuntimeException("Train stop not found")
                 );
 
-        stop.setArrivalTime(updated.getArrivalTime());
-        stop.setDepartureTime(updated.getDepartureTime());
+        stop.setSeq(updatedDTO.getSeq());
+        stop.setArrivalTime(updatedDTO.getArrivalTime());
+        stop.setDepartureTime(updatedDTO.getDepartureTime());
 
-        return trainStopRepository.save(stop);
+        if (!stop.getTrain().getNumber().equals(updatedDTO.getTrainNumber())) {
+            Train train = trainRepository.findById(updatedDTO.getTrainNumber())
+                    .orElseThrow(() -> new RuntimeException("Train not found"));
+            stop.setTrain(train);
+        }
+
+        if (!stop.getStation().getCode().equals(updatedDTO.getStationCode())) {
+            Station station = stationRepository.findById(updatedDTO.getStationCode())
+                    .orElseThrow(() -> new RuntimeException("Station not found"));
+            stop.setStation(station);
+        }
+
+        TrainStop savedTrainStop = trainStopRepository.save(stop);
+        return mapperService.toTrainStopDTO(savedTrainStop);
     }
 
     @Transactional

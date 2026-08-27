@@ -1,14 +1,12 @@
 package com.example.Tatkal.Controller;
 
-import com.example.Tatkal.Entity.Payment;
+import com.example.Tatkal.Dto.PaymentDTO;
 import com.example.Tatkal.Service.PaymentService;
 import jakarta.validation.Valid;
-import java.util.List;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
 
 @RestController
 @RequestMapping(value = "/api", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -20,40 +18,37 @@ public class PaymentController {
         this.paymentService = paymentService;
     }
 
+    @GetMapping("/payments/{id}")
+    public ResponseEntity<PaymentDTO> getPayment(@PathVariable Long id) {
+        return ResponseEntity.ok(paymentService.getById(id));
+    }
 
     @GetMapping("/bookings/{bookingId}/payment")
-    public ResponseEntity<?> getPayment(
-            @PathVariable Long bookingId) {
-
-        return ResponseEntity.ok(
-                paymentService.getPayment(
-                        bookingId
-                )
-        );
+    public ResponseEntity<PaymentDTO> getPaymentByBooking(@PathVariable Long bookingId) {
+        return ResponseEntity.ok(paymentService.getPayment(bookingId));
     }
 
     @PostMapping("/bookings/{bookingId}/payment")
-    public ResponseEntity<Payment> createPayment(
+    public ResponseEntity<PaymentDTO> createPayment(
             @PathVariable Long bookingId,
-            @Valid @RequestBody Long amount) {
+            @RequestBody PaymentCreateRequest request) {
 
-        return ResponseEntity.ok(
-                paymentService.createPayment(
-                        bookingId,
-                        amount
-                )
-        );
+        PaymentDTO createdPayment = paymentService.createPayment(bookingId, request.getAmountPaise());
+        return new ResponseEntity<>(createdPayment, HttpStatus.CREATED);
     }
 
     @PostMapping("/paymentSuccess/{transactionId}")
-    public ResponseEntity<Void> webhook(
-            @PathVariable String transationId) {
-
-        paymentService.processPaymentSuccess(
-                transationId
-        );
-
+    public ResponseEntity<Void> webhook(@PathVariable String transactionId) {
+        paymentService.processPaymentSuccess(transactionId);
         return ResponseEntity.ok().build();
+    }
+
+    // Inner class for request body
+    public static class PaymentCreateRequest {
+        private Long amountPaise;
+        
+        public Long getAmountPaise() { return amountPaise; }
+        public void setAmountPaise(Long amountPaise) { this.amountPaise = amountPaise; }
     }
 
 }

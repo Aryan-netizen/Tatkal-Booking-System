@@ -21,7 +21,7 @@ import lombok.Setter;
 
 
 @Entity
-@Table(name = "Bookings")
+@Table(name = "bookings")
 @Getter
 @Setter
 @AllArgsConstructor

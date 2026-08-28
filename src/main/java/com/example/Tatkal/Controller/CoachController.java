@@ -65,7 +65,7 @@ public class CoachController {
     public ResponseEntity<List<com.example.Tatkal.Dto.SeatDTO>> createBulkSeats(
             @PathVariable Long id,
             @RequestParam int count,
-            @RequestParam(required = false, defaultValue = "LOWER") String berthType) {
+            @RequestParam(required = false, defaultValue = "LOWERB") String berthType) {
         return new ResponseEntity<>(seatService.createBulk(id, count, berthType), HttpStatus.CREATED);
     }
 

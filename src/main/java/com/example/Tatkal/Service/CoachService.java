@@ -22,7 +22,7 @@ public class CoachService {
     @Transactional
     public CoachDTO create(CoachDTO coachDTO) {
         Trip trip = coachDTO.getTripId() == null ? null : tripRepository.findById(coachDTO.getTripId())
-            .orElseThrow(() -> new RuntimeException("Trip not found"));
+            .orElseThrow(() -> new RuntimeException("Trip not founds"));
 
         Coach coach = mapperService.toCoachEntity(coachDTO, trip);
         Coach savedCoach = coachRepository.save(coach);

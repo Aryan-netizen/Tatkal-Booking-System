@@ -21,7 +21,6 @@ public class CoachDTO {
     @NotNull
     private String classCode;
 
-    @NotNull
     private Long tripId;
 
 }

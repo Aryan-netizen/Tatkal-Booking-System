@@ -21,8 +21,8 @@ public class CoachService {
 
     @Transactional
     public CoachDTO create(CoachDTO coachDTO) {
-        Trip trip = tripRepository.findById(coachDTO.getTripId())
-                .orElseThrow(() -> new RuntimeException("Trip not found"));
+        Trip trip = coachDTO.getTripId() == null ? null : tripRepository.findById(coachDTO.getTripId())
+            .orElseThrow(() -> new RuntimeException("Trip not found"));
 
         Coach coach = mapperService.toCoachEntity(coachDTO, trip);
         Coach savedCoach = coachRepository.save(coach);
@@ -71,7 +71,11 @@ public class CoachService {
         coach.setCode(updatedDTO.getCode());
         coach.setClassCode(updatedDTO.getClassCode());
 
-        if (!coach.getTrip().getId().equals(updatedDTO.getTripId())) {
+        if (updatedDTO.getTripId() != null
+                && (coach.getTrip() == null || !coach.getTrip().getId().equals(updatedDTO.getTripId()))) {
+            if (coach.getTrip() != null) {
+                throw new RuntimeException("Coach is already assigned to trip " + coach.getTrip().getId());
+            }
             Trip trip = tripRepository.findById(updatedDTO.getTripId())
                     .orElseThrow(() -> new RuntimeException("Trip not found"));
             coach.setTrip(trip);
@@ -79,6 +83,19 @@ public class CoachService {
 
         Coach savedCoach = coachRepository.save(coach);
         return mapperService.toCoachDTO(savedCoach);
+    }
+
+    @Transactional
+    public CoachDTO assignToTrip(Long coachId, Long tripId) {
+        Coach coach = coachRepository.findById(coachId)
+                .orElseThrow(() -> new RuntimeException("Coach not found"));
+        if (coach.getTrip() != null) {
+            throw new RuntimeException("Coach is already assigned to trip " + coach.getTrip().getId());
+        }
+        Trip trip = tripRepository.findById(tripId)
+                .orElseThrow(() -> new RuntimeException("Trip not found"));
+        coach.setTrip(trip);
+        return mapperService.toCoachDTO(coachRepository.save(coach));
     }
 
     @Transactional

@@ -39,7 +39,7 @@ public class Coach {
     private String classCode;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "trip_id", nullable = false)
+    @JoinColumn(name = "trip_id")
     private Trip trip;
 
     @OneToMany(mappedBy = "coach")

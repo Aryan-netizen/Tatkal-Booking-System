@@ -68,7 +68,7 @@ public class DTOMapperService {
         dto.setId(coach.getId());
         dto.setCode(coach.getCode());
         dto.setClassCode(coach.getClassCode());
-        dto.setTripId(coach.getTrip().getId());
+        dto.setTripId(coach.getTrip() == null ? null : coach.getTrip().getId());
         return dto;
     }
 

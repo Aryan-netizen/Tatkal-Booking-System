@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.stream.IntStream;
 
 @Service
 @RequiredArgsConstructor
@@ -32,6 +33,29 @@ public class SeatService {
 
         Seat savedSeat = seatRepository.save(seat);
         return mapperService.toSeatDTO(savedSeat);
+    }
+
+    @Transactional
+    public List<SeatDTO> createBulk(Long coachId, int count, String berthType) {
+        if (count < 1 || count > 500) {
+            throw new RuntimeException("Seat count must be between 1 and 500");
+        }
+        Coach coach = coachRepository.findById(coachId)
+                .orElseThrow(() -> new RuntimeException("Coach not found"));
+        int firstNumber = seatRepository.findTopByCoachIdOrderBySeatNumberDesc(coachId)
+                .map(seat -> seat.getSeatNumber() + 1)
+                .orElse(1);
+        List<Seat> seats = IntStream.range(0, count).mapToObj(index -> {
+            Seat seat = new Seat();
+            seat.setSeatNumber(firstNumber + index);
+            seat.setBerthType(berthType == null || berthType.isBlank() ? "LOWER" : berthType);
+            seat.setStatus("AVAILABLE");
+            seat.setCoach(coach);
+            return seat;
+        }).toList();
+        return seatRepository.saveAll(seats).stream()
+                .map(mapperService::toSeatDTO)
+                .toList();
     }
 
     @Transactional(readOnly = true)

@@ -295,6 +295,16 @@ This document provides a complete list of all API endpoints with request/respons
 - **Description**: Delete a coach
 - **Response** (204): No content
 
+#### 33a. Assign Coach to Trip
+- **POST** `/api/coaches/{id}/assign/{tripId}`
+- **Description**: Assign an unassigned coach to a trip. A coach that is already assigned cannot be reused for another trip.
+- **Response** (200): Updated coach object
+
+#### 33b. Create Bulk Seats for Coach
+- **POST** `/api/coaches/{id}/seats/bulk?count={count}&berthType={berthType}`
+- **Description**: Create 1-500 available seats for a coach. Seat numbers continue after the coach's current highest seat number.
+- **Response** (201): Array of created seat objects
+
 ---
 
 ## Seat Management

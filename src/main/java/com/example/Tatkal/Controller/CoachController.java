@@ -2,19 +2,13 @@ package com.example.Tatkal.Controller;
 
 import com.example.Tatkal.Dto.CoachDTO;
 import com.example.Tatkal.Service.CoachService;
+import com.example.Tatkal.Service.SeatService;
 import jakarta.validation.Valid;
 import java.util.List;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 
 @RestController
@@ -22,9 +16,11 @@ import org.springframework.web.bind.annotation.RestController;
 public class CoachController {
 
     private final CoachService coachService;
+    private final SeatService seatService;
 
-    public CoachController(final CoachService coachService) {
+    public CoachController(final CoachService coachService, final SeatService seatService) {
         this.coachService = coachService;
+        this.seatService = seatService;
     }
 
     @GetMapping
@@ -58,6 +54,19 @@ public class CoachController {
                                             @RequestBody @Valid final CoachDTO coachDTO) {
         CoachDTO updatedCoach = coachService.update(id, coachDTO);
         return ResponseEntity.ok(updatedCoach);
+    }
+
+    @PostMapping("/{id}/assign/{tripId}")
+    public ResponseEntity<CoachDTO> assignToTrip(@PathVariable Long id, @PathVariable Long tripId) {
+        return ResponseEntity.ok(coachService.assignToTrip(id, tripId));
+    }
+
+    @PostMapping("/{id}/seats/bulk")
+    public ResponseEntity<List<com.example.Tatkal.Dto.SeatDTO>> createBulkSeats(
+            @PathVariable Long id,
+            @RequestParam int count,
+            @RequestParam(required = false, defaultValue = "LOWER") String berthType) {
+        return new ResponseEntity<>(seatService.createBulk(id, count, berthType), HttpStatus.CREATED);
     }
 
     @DeleteMapping("/{id}")

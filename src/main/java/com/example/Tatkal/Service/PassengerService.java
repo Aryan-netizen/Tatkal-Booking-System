@@ -41,6 +41,11 @@ public class PassengerService {
     }
 
     @Transactional(readOnly = true)
+    public List<PassengerDTO> getAll() {
+        return mapperService.toPassengerDTOList(passengerRepository.findAll());
+    }
+
+    @Transactional(readOnly = true)
     public PassengerDTO getById(Long id) {
         
         Passenger passenger = passengerRepository.findById(id)

@@ -21,6 +21,11 @@ public class TrainStopController {
         this.trainStopService = trainStopService;
     }
 
+    @GetMapping
+    public ResponseEntity<List<TrainStopDTO>> getAllTrainStops() {
+        return ResponseEntity.ok(trainStopService.getAll());
+    }
+
     @GetMapping("/train/{trainNumber}")
     public ResponseEntity<List<TrainStopDTO>> getByTrain(@PathVariable Long trainNumber) {
         return ResponseEntity.ok(trainStopService.getByTrain(trainNumber));

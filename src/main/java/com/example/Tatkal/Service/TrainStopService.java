@@ -49,6 +49,11 @@ public class TrainStopService {
     }
 
     @Transactional(readOnly = true)
+    public List<TrainStopDTO> getAll() {
+        return mapperService.toTrainStopDTOList(trainStopRepository.findAll());
+    }
+
+    @Transactional(readOnly = true)
     public List<TrainStopDTO> getBySeq(Long trainNumber) {
         List<TrainStop> trainStops = trainStopRepository.findStopsByTrain(trainNumber);
         return mapperService.toTrainStopDTOList(trainStops);

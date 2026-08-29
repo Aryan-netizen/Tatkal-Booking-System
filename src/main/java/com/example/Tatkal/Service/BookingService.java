@@ -144,6 +144,11 @@ public class BookingService {
     // GET BOOKING
     // -----------------------------------------
 
+        @Transactional(readOnly = true)
+        public List<BookingDTO> getAllBookings() {
+                return mapperService.toBookingDTOList(bookingRepository.findAll());
+        }
+
     @Transactional(readOnly = true)
     public BookingResponseDTO getBooking(Long bookingId) {
 

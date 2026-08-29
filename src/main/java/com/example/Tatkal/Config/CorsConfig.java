@@ -14,11 +14,7 @@ public class CorsConfig {
             @Override
             public void addCorsMappings(CorsRegistry registry) {
                 registry.addMapping("/**")
-                    .allowedOriginPatterns(
-                        "https://tatkal-booking-system-k6twirpiw-aryan-netizens-projects.vercel.app",
-                        "https://*.vercel.app",
-                        "http://localhost:[*]",
-                        "http://127.0.0.1:[*]")
+                    .allowedOriginPatterns("*")
                         .allowedMethods("*")
                     .allowedHeaders("*")
                     .maxAge(3600);

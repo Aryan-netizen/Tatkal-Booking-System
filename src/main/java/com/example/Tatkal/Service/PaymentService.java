@@ -11,6 +11,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.OffsetDateTime;
+import java.util.List;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -41,6 +43,7 @@ public class PaymentService {
         payment.setBooking(booking);
         payment.setAmountPaise(amountPaise);
         payment.setStatus("PENDING");
+        payment.setTransactionId("TXN-" + UUID.randomUUID());
         payment.setCreatedAt(OffsetDateTime.now());
 
         Payment savedPayment = paymentRepository.save(payment);
@@ -73,6 +76,13 @@ public class PaymentService {
 
         return mapperService.toPaymentDTO(payment);
     }
+
+        @Transactional(readOnly = true)
+        public List<PaymentDTO> getAll() {
+                return paymentRepository.findAll().stream()
+                                .map(mapperService::toPaymentDTO)
+                                .toList();
+        }
 
     /*
      * This method should eventually verify the webhook

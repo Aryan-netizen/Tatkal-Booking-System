@@ -28,6 +28,11 @@ public class BookingController {
         this.bookingService = bookingService;
     }
 
+    @GetMapping
+    public ResponseEntity<List<BookingDTO>> getAllBookings() {
+        return ResponseEntity.ok(bookingService.getAllBookings());
+    }
+
     @GetMapping("/{id}")
     public ResponseEntity<BookingResponseDTO> getBooking(@PathVariable(name = "id") final Long id) {
         return ResponseEntity.ok(bookingService.getBooking(id));

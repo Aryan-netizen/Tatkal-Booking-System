@@ -20,6 +20,11 @@ public class PassengerController {
         this.passengerService = passengerService;
     }
 
+    @GetMapping("/passengers")
+    public ResponseEntity<List<PassengerDTO>> getAllPassengers() {
+        return ResponseEntity.ok(passengerService.getAll());
+    }
+
     @GetMapping("/passengers/{id}")
     public ResponseEntity<PassengerDTO> getPassenger(@PathVariable Long id) {
         return ResponseEntity.ok(passengerService.getById(id));

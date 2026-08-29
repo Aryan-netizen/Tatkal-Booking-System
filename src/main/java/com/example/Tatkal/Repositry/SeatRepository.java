@@ -42,13 +42,12 @@ public interface SeatRepository extends JpaRepository<Seat, Long> {
     /*
      * Lock one specific seat.
      */
-    @Lock(LockModeType. PESSIMISTIC_WRITE)
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query(value = """
         SELECT s.id, s.seat_number, s.berth_type, s.status, s.coach_id
         FROM seats s
         WHERE s.id = :seatId
-        FOR UPDATE
-    """, nativeQuery = true)
+    """)
     Optional<Seat> findByIdForUpdate(
             @Param("seatId") Long seatId
     );
@@ -59,7 +58,7 @@ public interface SeatRepository extends JpaRepository<Seat, Long> {
      * Because Seat -> Coach -> Trip,
      * we can search through those relationships.
      */
-    @Lock(LockModeType. PESSIMISTIC_WRITE)
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query(value = """
         SELECT s.id, s.seat_number, s.berth_type, s.status, s.coach_id
         FROM seats s
@@ -68,8 +67,8 @@ public interface SeatRepository extends JpaRepository<Seat, Long> {
         AND c.class_code = :classCode
         AND s.status = 'AVAILABLE'
         ORDER BY s.coach_id, s.seat_number
-        FOR UPDATE
-    """, nativeQuery = true)
+
+    """)
     List<Seat> findAvailableSeatsForTripAndClassForUpdate(
             @Param("tripId") Long tripId,
             @Param("classCode") String classCode

@@ -1,7 +1,6 @@
 package com.example.Tatkal.Repositry;
 
 import com.example.Tatkal.Entity.Seat;
-import jakarta.persistence.LockModeType;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
@@ -26,7 +25,6 @@ public interface SeatRepository extends JpaRepository<Seat, Long> {
      *
      * The selected seat row is locked until the transaction commits.
      */
-    @Lock(LockModeType. PESSIMISTIC_WRITE)
     @Query(value = """
         SELECT s.id, s.seat_number, s.berth_type, s.status, s.coach_id
         FROM seats s
@@ -42,12 +40,12 @@ public interface SeatRepository extends JpaRepository<Seat, Long> {
     /*
      * Lock one specific seat.
      */
-    @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query(value = """
         SELECT s.id, s.seat_number, s.berth_type, s.status, s.coach_id
         FROM seats s
         WHERE s.id = :seatId
-    """)
+        FOR UPDATE
+    """, nativeQuery = true)
     Optional<Seat> findByIdForUpdate(
             @Param("seatId") Long seatId
     );
@@ -58,7 +56,6 @@ public interface SeatRepository extends JpaRepository<Seat, Long> {
      * Because Seat -> Coach -> Trip,
      * we can search through those relationships.
      */
-    @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query(value = """
         SELECT s.id, s.seat_number, s.berth_type, s.status, s.coach_id
         FROM seats s
@@ -67,8 +64,8 @@ public interface SeatRepository extends JpaRepository<Seat, Long> {
         AND c.class_code = :classCode
         AND s.status = 'AVAILABLE'
         ORDER BY s.coach_id, s.seat_number
-
-    """)
+        FOR UPDATE
+    """, nativeQuery = true)
     List<Seat> findAvailableSeatsForTripAndClassForUpdate(
             @Param("tripId") Long tripId,
             @Param("classCode") String classCode

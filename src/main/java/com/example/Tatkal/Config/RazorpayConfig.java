@@ -1,0 +1,18 @@
+// src/main/java/com/example/Tatkal/Config/RazorpayConfig.java
+package com.example.Tatkal.Config;
+
+import com.razorpay.RazorpayClient;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+
+@Configuration
+public class RazorpayConfig {
+
+    @Bean
+    public RazorpayClient razorpayClient(
+            @Value("${razorpay.key-id}") String keyId,
+            @Value("${razorpay.key-secret}") String keySecret) throws Exception {
+        return new RazorpayClient(keyId, keySecret);
+    }
+}

@@ -34,6 +34,7 @@ public class BookingService {
     private final PassengerRepository passengerRepository;
     private final PaymentRepository paymentRepository;
     private final DTOMapperService mapperService;
+    private final FareService fareService;
 
     /*
      * THIS TRANSACTION IS THE IMPORTANT PART.
@@ -128,7 +129,9 @@ public class BookingService {
         booking.setFromSeq(createDTO.getFromSeq());
         booking.setToSeq(createDTO.getToSeq());
 
-        booking.setAmountPaise(createDTO.getAmountPaise());
+        long serverFarePaise = fareService.calculateFarePaise(
+                         createDTO.getClassCode(), createDTO.getFromSeq(), createDTO.getToSeq());
+        booking.setAmountPaise(serverFarePaise);
 
         booking.setStatus("HELD");
 
@@ -230,43 +233,27 @@ public class BookingService {
 
     @Transactional
     public BookingDTO confirmBooking(Long bookingId) {
-
-        Booking booking =
-                bookingRepository.findById(bookingId)
-                        .orElseThrow(() ->
-                                new RuntimeException(
-                                        "Booking not found"
-                                )
-                        );
+        Booking booking = bookingRepository.findById(bookingId)
+                .orElseThrow(() -> new RuntimeException("Booking not found"));
 
         if (!"HELD".equals(booking.getStatus())) {
-            throw new RuntimeException(
-                    "Booking is not in HELD state"
-            );
+            throw new RuntimeException("Booking is not in HELD state");
+        }
+
+        boolean paid = paymentRepository.findByBookingId(bookingId).stream()
+                .anyMatch(p -> "SUCCESS".equals(p.getStatus()));
+        if (!paid) {
+            throw new RuntimeException("Payment not completed for this booking");
         }
 
         Seat seat = booking.getSeat();
-
-        if (seat == null) {
-            throw new RuntimeException(
-                    "No seat assigned to booking"
-            );
-        }
-
-        if (!"HELD".equals(seat.getStatus())) {
-            throw new RuntimeException(
-                    "Seat is not held"
-            );
-        }
+        if (seat == null) throw new RuntimeException("No seat assigned to booking");
+        if (!"HELD".equals(seat.getStatus())) throw new RuntimeException("Seat is not held");
 
         seat.setStatus("BOOKED");
-
         booking.setStatus("CONFIRMED");
-
         seatRepository.save(seat);
-
-        Booking savedBooking = bookingRepository.save(booking);
-        return mapperService.toBookingDTO(savedBooking);
+        return mapperService.toBookingDTO(bookingRepository.save(booking));
     }
 }
 

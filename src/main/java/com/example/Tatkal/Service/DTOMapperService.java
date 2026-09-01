@@ -197,7 +197,6 @@ public class DTOMapperService {
         dto.setId(payment.getId());
         dto.setAmountPaise(payment.getAmountPaise());
         dto.setStatus(payment.getStatus());
-        dto.setTransactionId(payment.getTransactionId());
         dto.setCreatedAt(payment.getCreatedAt());
         dto.setBooking(payment.getBooking().getId());
         return dto;

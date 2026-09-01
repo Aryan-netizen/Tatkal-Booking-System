@@ -2,12 +2,15 @@ package com.example.Tatkal.Controller;
 
 import com.example.Tatkal.Dto.PaymentDTO;
 import com.example.Tatkal.Service.PaymentService;
+import com.razorpay.Utils;
 import jakarta.validation.Valid;
+import org.json.JSONObject;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping(value = "/api", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -49,6 +52,23 @@ public class PaymentController {
         return ResponseEntity.ok().build();
     }
 
+    @PostMapping("/payments/webhook")
+    public ResponseEntity<Void> webhook(
+            @RequestBody String rawBody,
+            @RequestHeader("X-Razorpay-Signature") String signature) {
+        paymentService.processGatewayWebhook(rawBody, signature);
+        return ResponseEntity.ok().build();
+    }
+    @PostMapping("/payments/verify")
+    public ResponseEntity<Map<String, Boolean>> verifyCheckout(@RequestBody CheckoutVerifyDTO dto) throws Exception {
+        JSONObject options = new JSONObject();
+        options.put("razorpay_order_id", dto.getRazorpayOrderId());
+        options.put("razorpay_payment_id", dto.getRazorpayPaymentId());
+        options.put("razorpay_signature", dto.getRazorpaySignature());
+
+        boolean valid = Utils.verifyPaymentSignature(options, razorpayKeySecret); // from the Razorpay SDK
+        return ResponseEntity.ok(Map.of("valid", valid));
+    }
     // Inner class for request body
     public static class PaymentCreateRequest {
         private Long amountPaise;

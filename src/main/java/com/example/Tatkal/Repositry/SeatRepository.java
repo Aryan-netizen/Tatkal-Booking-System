@@ -65,6 +65,7 @@ public interface SeatRepository extends JpaRepository<Seat, Long> {
         AND s.status = 'AVAILABLE'
         ORDER BY s.coach_id, s.seat_number
         FOR UPDATE
+        LIMIT 1
     """, nativeQuery = true)
     List<Seat> findAvailableSeatsForTripAndClassForUpdate(
             @Param("tripId") Long tripId,

@@ -4,6 +4,7 @@ import com.example.Tatkal.Dto.PaymentDTO;
 import com.example.Tatkal.Entity.Booking;
 import com.example.Tatkal.Entity.Payment;
 
+import com.example.Tatkal.Entity.Seat;
 import com.example.Tatkal.Repositry.BookingRepository;
 import com.example.Tatkal.Repositry.PaymentRepository;
 import lombok.RequiredArgsConstructor;
@@ -112,6 +113,12 @@ public class PaymentService {
         Booking booking = payment.getBooking();
 
         booking.setStatus("CONFIRMED");
+
+        Seat seat = booking.getSeat();
+        if (seat != null) {
+            seat.setStatus("BOOKED");
+            // save via seatRepository
+        }
 
         bookingRepository.save(booking);
         paymentRepository.save(payment);

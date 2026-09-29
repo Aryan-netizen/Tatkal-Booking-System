@@ -5,6 +5,7 @@ import com.example.Tatkal.Dto.UsersDTO;
 import com.example.Tatkal.Entity.Users;
 import com.example.Tatkal.Repositry.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -16,6 +17,7 @@ import java.util.List;
 public class UserService {
 
     private final UserRepository usersRepository;
+    private final PasswordEncoder passwordEncoder;
     private final DTOMapperService mapperService;
 
     @Transactional
@@ -31,7 +33,7 @@ public class UserService {
         user.setCreatedAt(OffsetDateTime.now());
         // TODO: Hash password properly before saving
         // user.setPasswordHash(passwordEncoder.encode(createDTO.getPassword()));
-
+        user.setPasswordHash(passwordEncoder.encode(createDTO.getPassword()));
         Users savedUser = usersRepository.save(user);
         return mapperService.toUserDTO(savedUser);
     }

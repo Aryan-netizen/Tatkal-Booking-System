@@ -40,6 +40,9 @@ public class Users {
     private String passwordHash;
 
     @Column(nullable = false)
+    private Boolean isAdmin = false;
+
+    @Column(nullable = false)
     private OffsetDateTime createdAt;
 
     @OneToMany(mappedBy = "user")

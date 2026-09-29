@@ -17,6 +17,7 @@ import com.example.Tatkal.Repositry.UserRepository;
 import com.example.Tatkal.Repositry.PassengerRepository;
 import com.example.Tatkal.Repositry.PaymentRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -50,13 +51,13 @@ public class BookingService {
      * If anything fails, everything rolls back.
      */
     @Transactional
-    public BookingDTO createBooking(BookingCreateDTO createDTO) {
+    public BookingDTO createBooking(BookingCreateDTO createDTO, String authenticatedEmail) {
 
         // -----------------------------------------
         // 1. Validate user
         // -----------------------------------------
 
-        Users user = usersRepository.findById(createDTO.getUserId())
+        Users user = usersRepository.findByEmail(authenticatedEmail)
                 .orElseThrow(() ->
                         new RuntimeException(
                                 "User not found"
@@ -190,6 +191,14 @@ public class BookingService {
         return mapperService.toBookingDTOList(bookings);
     }
 
+    private void requireOwnerOrAdmin(Booking booking, Authentication authentication) {
+        boolean isOwner = booking.getUser().getEmail().equals(authentication.getName());
+        boolean isAdmin = authentication.getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
+        if (!isOwner && !isAdmin) {
+            throw new SecurityException("Not authorized to modify this booking");
+        }
+    }
     // -----------------------------------------
     // CANCEL BOOKING
     // -----------------------------------------

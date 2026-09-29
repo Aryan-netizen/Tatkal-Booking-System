@@ -13,8 +13,7 @@ import lombok.Setter;
 @AllArgsConstructor
 public class BookingCreateDTO {
 
-    @NotNull
-    private Long userId;
+
 
     @NotNull
     private Long tripId;

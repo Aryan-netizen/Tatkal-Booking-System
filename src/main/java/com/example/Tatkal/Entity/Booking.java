@@ -48,6 +48,9 @@ public class Booking {
     @Column(nullable = false)
     private OffsetDateTime createdAt;
 
+    @Column
+    private OffsetDateTime holdExpiresAt;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
     private Users user;

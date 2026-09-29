@@ -63,6 +63,11 @@ public class BookingService {
                                 "User not found"
                         )
                 );
+        long activeHolds = bookingRepository.countByUserIdAndStatus(user.getId(), "HELD");
+        if (activeHolds >= 2) { // pick a number and put it in application.properties
+            throw new RuntimeException("Too many active holds — pay or cancel one first");
+        }
+
 
         // -----------------------------------------
         // 2. Validate trip
@@ -139,6 +144,8 @@ public class BookingService {
         booking.setCreatedAt(
                 OffsetDateTime.now()
         );
+
+        booking.setHoldExpiresAt(OffsetDateTime.now().plusMinutes(10));
 
         Booking savedBooking = bookingRepository.save(booking);
         return mapperService.toBookingDTO(savedBooking);

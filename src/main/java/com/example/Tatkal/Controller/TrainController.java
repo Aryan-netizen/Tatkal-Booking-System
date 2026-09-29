@@ -42,8 +42,8 @@ public class TrainController {
 
     @GetMapping("/search")
     public ResponseEntity<List<TrainDTO>> searchTrains(
-            @RequestParam(name = "from") Long from,
-            @RequestParam(name = "to") Long to,
+            @RequestParam(name = "from") String from,
+            @RequestParam(name = "to") String to,
             @RequestParam(name = "date") String date) {
 
         LocalDate dates = LocalDate.parse(date);

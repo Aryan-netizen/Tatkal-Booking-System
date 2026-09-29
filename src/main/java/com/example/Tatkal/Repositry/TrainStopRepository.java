@@ -9,7 +9,7 @@ import java.util.List;
 import java.util.Optional;
 
 public interface TrainStopRepository
-        extends JpaRepository<TrainStop, Integer> {
+        extends JpaRepository<TrainStop, Long> {
 
     @Query("""
         SELECT ts
@@ -27,7 +27,7 @@ public interface TrainStopRepository
         WHERE ts.station.code = :stationCode
     """)
     List<TrainStop> findStopsByStation(
-            @Param("stationCode") Long stationCode
+            @Param("stationCode") String stationCode
     );
 
     @Query("""
@@ -38,6 +38,6 @@ public interface TrainStopRepository
     """)
     Optional<TrainStop> findTrainStop(
             @Param("trainNumber") Long trainNumber,
-            @Param("stationCode") Long stationCode
+            @Param("stationCode") String stationCode
     );
 }

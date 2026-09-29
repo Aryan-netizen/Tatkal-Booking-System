@@ -31,7 +31,7 @@ public class StationController {
     }
 
     @GetMapping("/{code}")
-    public ResponseEntity<StationDTO> getStation(@PathVariable(name = "code") final Long code) throws Exception {
+    public ResponseEntity<StationDTO> getStation(@PathVariable(name = "code") final String code) throws Exception {
         return ResponseEntity.ok(stationService.getById(code));
     }
 
@@ -42,14 +42,14 @@ public class StationController {
     }
 
     @PutMapping("/{code}")
-    public ResponseEntity<StationDTO> updateStation(@PathVariable(name = "code") final Long code,
+    public ResponseEntity<StationDTO> updateStation(@PathVariable(name = "code") final String code,
                                               @RequestBody @Valid final StationDTO stationDTO) throws Exception {
         StationDTO updatedStation = stationService.update(code, stationDTO);
         return ResponseEntity.ok(updatedStation);
     }
 
     @DeleteMapping("/{code}")
-    public ResponseEntity<Void> deleteStation(@PathVariable(name = "code") final Long code) throws Exception {
+    public ResponseEntity<Void> deleteStation(@PathVariable(name = "code") final String code) throws Exception {
         stationService.delete(code);
         return ResponseEntity.noContent().build();
     }

@@ -32,7 +32,7 @@ public class TrainStopController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<TrainStopDTO> getTrainStop(@PathVariable(name = "id") final Integer id) {
+    public ResponseEntity<TrainStopDTO> getTrainStop(@PathVariable(name = "id") final Long id) {
         return ResponseEntity.ok(trainStopService.getById(id));
     }
 
@@ -43,13 +43,13 @@ public class TrainStopController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<TrainStopDTO> update(@PathVariable Integer id, @Valid @RequestBody TrainStopDTO trainStopDTO) {
+    public ResponseEntity<TrainStopDTO> update(@PathVariable Long id, @Valid @RequestBody TrainStopDTO trainStopDTO) {
         TrainStopDTO updatedTrainStop = trainStopService.update(id, trainStopDTO);
         return ResponseEntity.ok(updatedTrainStop);
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> delete(@PathVariable Integer id) {
+    public ResponseEntity<Void> delete(@PathVariable Long id) {
         trainStopService.delete(id);
         return ResponseEntity.noContent().build();
     }

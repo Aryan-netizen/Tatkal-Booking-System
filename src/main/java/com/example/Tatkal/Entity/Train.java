@@ -26,10 +26,9 @@ public class Train {
 
     @Id
     @Column(nullable = false, updatable = false)
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long number;
 
-    @Column(nullable = false, columnDefinition = "longtext")
+    @Column(nullable = false)
     private String name;
 
     @OneToMany(mappedBy = "train")

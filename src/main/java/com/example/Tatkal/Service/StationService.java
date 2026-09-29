@@ -19,6 +19,9 @@ public class StationService {
     @Transactional
     public StationDTO create(StationDTO stationDTO) {
         Station station = mapperService.toStationEntity(stationDTO);
+        if (stationRepository.existsById(station.getCode())) {
+            throw new RuntimeException("Station already exists");
+        }
         Station savedStation = stationRepository.save(station);
         return mapperService.toStationDTO(savedStation);
     }
@@ -30,8 +33,8 @@ public class StationService {
     }
 
     @Transactional(readOnly = true)
-    public StationDTO getById(Long id) {
-        Station station = stationRepository.findById(id)
+    public StationDTO getById(String code) {
+        Station station = stationRepository.findById(code)
                 .orElseThrow(() ->
                         new RuntimeException("Station not found")
                 );
@@ -45,9 +48,9 @@ public class StationService {
     }
 
     @Transactional
-    public StationDTO update(Long id, StationDTO updatedDTO) {
+    public StationDTO update(String code, StationDTO updatedDTO) {
 
-        Station station = stationRepository.findById(id)
+        Station station = stationRepository.findById(code)
                 .orElseThrow(() ->
                         new RuntimeException("Station not found")
                 );
@@ -59,12 +62,12 @@ public class StationService {
     }
 
     @Transactional
-    public void delete(Long id) {
+    public void delete(String code) {
 
-        if (!stationRepository.existsById(id)) {
+        if (!stationRepository.existsById(code)) {
             throw new RuntimeException("Station not found");
         }
 
-        stationRepository.deleteById(id);
+        stationRepository.deleteById(code);
     }
 }

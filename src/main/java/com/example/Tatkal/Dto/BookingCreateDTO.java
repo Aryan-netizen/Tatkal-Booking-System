@@ -29,8 +29,4 @@ public class BookingCreateDTO {
     @NotNull
     private String classCode;
 
-    @NotNull
-    @Positive
-    private Long amountPaise;
-
 }

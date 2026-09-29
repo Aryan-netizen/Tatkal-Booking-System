@@ -28,6 +28,9 @@ public class TrainStop {
     @Id
     @Column(nullable = false, updatable = false)
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @Column(name = "stop_order", nullable = false)
     private Integer seq;
 
     @Column

@@ -128,33 +128,17 @@ public class SeatService {
         seatRepository.deleteById(id);
     }
 
-    /*
-     * LOCKED OPERATION
-     */
     @Transactional
-    public SeatDTO lockAvailableSeat(
-            Long tripId,
-            String classCode
-    ) {
+    public SeatDTO lockAvailableSeat(Long tripId, String classCode) {
+        List<Long> candidateSeatIds = seatRepository.findAvailableSeatIds(tripId, classCode, org.springframework.data.domain.PageRequest.of(0, 20));
+        Long seatId = candidateSeatIds.stream().findFirst().orElseThrow(() -> new RuntimeException("No seats available"));
 
-        List<Seat> seats =
-                seatRepository
-                        .findAvailableSeatsForTripAndClassForUpdate(
-                                tripId,
-                                classCode
-                        );
-
-        if (seats.isEmpty()) {
-            throw new RuntimeException(
-                    "No seats available"
-            );
+        if (seatRepository.claimSeat(seatId) == 0) {
+            throw new RuntimeException("No seats available");
         }
 
-        Seat seat = seats.get(0);
-
-        seat.setStatus("HELD");
-
-        Seat savedSeat = seatRepository.save(seat);
-        return mapperService.toSeatDTO(savedSeat);
+        Seat seat = seatRepository.findById(seatId)
+                .orElseThrow(() -> new RuntimeException("Seat not found"));
+        return mapperService.toSeatDTO(seat);
     }
 }

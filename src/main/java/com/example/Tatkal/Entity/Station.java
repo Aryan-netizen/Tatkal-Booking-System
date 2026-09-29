@@ -25,11 +25,10 @@ import lombok.Setter;
 public class Station {
 
     @Id
-    @Column(nullable = false, updatable = false)
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long code;
+    @Column(nullable = false, updatable = false, length = 8)
+    private String code;
 
-    @Column(nullable = false, columnDefinition = "longtext")
+    @Column(nullable = false)
     private String name;
 
     @OneToMany(mappedBy = "station")

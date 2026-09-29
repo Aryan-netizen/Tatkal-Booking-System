@@ -48,13 +48,13 @@ public class TrainService {
     }
 
     @Transactional(readOnly = true)
-    public List<TrainDTO> search(Long from, Long to, LocalDate date) {
-        if (from.equals(to)) {
+    public List<TrainDTO> search(String from, String to, LocalDate date) {
+        if (from.equalsIgnoreCase(to)) {
             throw new IllegalArgumentException(
                     "From and To stations cannot be same"
             );
         }
-        List<Train> trains = trainRepository.searchTrains(from,to,date);
+        List<Train> trains = trainRepository.searchTrains(from, to, date);
         return mapperService.toTrainDTOList(trains);
     }
 

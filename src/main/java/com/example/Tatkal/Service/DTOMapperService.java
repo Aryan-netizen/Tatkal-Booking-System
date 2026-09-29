@@ -127,7 +127,7 @@ public class DTOMapperService {
 
     public Station toStationEntity(StationDTO dto) {
         Station station = new Station();
-        station.setCode(dto.getCode());
+        station.setCode(dto.getCode() == null ? null : dto.getCode().trim().toUpperCase());
         station.setName(dto.getName());
         return station;
     }
@@ -152,6 +152,7 @@ public class DTOMapperService {
     // TrainStop mappings
     public TrainStopDTO toTrainStopDTO(TrainStop trainStop) {
         TrainStopDTO dto = new TrainStopDTO();
+        dto.setId(trainStop.getId());
         dto.setSeq(trainStop.getSeq());
         dto.setArrivalTime(trainStop.getArrivalTime());
         dto.setDepartureTime(trainStop.getDepartureTime());
@@ -197,6 +198,7 @@ public class DTOMapperService {
         dto.setId(payment.getId());
         dto.setAmountPaise(payment.getAmountPaise());
         dto.setStatus(payment.getStatus());
+        dto.setTransactionId(payment.getTransactionId());
         dto.setCreatedAt(payment.getCreatedAt());
         dto.setBooking(payment.getBooking().getId());
         return dto;

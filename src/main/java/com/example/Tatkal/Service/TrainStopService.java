@@ -37,7 +37,6 @@ public class TrainStopService {
                 );
 
         TrainStop trainStop = mapperService.toTrainStopEntity(trainStopDTO, train, station);
-        trainStop.setSeq(null);
         TrainStop savedTrainStop = trainStopRepository.save(trainStop);
         return mapperService.toTrainStopDTO(savedTrainStop);
     }
@@ -60,7 +59,7 @@ public class TrainStopService {
     }
 
     @Transactional(readOnly = true)
-    public TrainStopDTO getById(Integer id) {
+    public TrainStopDTO getById(Long id) {
         TrainStop trainStop = trainStopRepository.findById(id)
                 .orElseThrow(() ->
                         new RuntimeException("Train stop not found")
@@ -69,7 +68,7 @@ public class TrainStopService {
     }
 
     @Transactional
-    public TrainStopDTO update(Integer id, TrainStopDTO updatedDTO) {
+    public TrainStopDTO update(Long id, TrainStopDTO updatedDTO) {
 
         TrainStop stop = trainStopRepository.findById(id)
                 .orElseThrow(() ->
@@ -97,7 +96,7 @@ public class TrainStopService {
     }
 
     @Transactional
-    public void delete(Integer id) {
+    public void delete(Long id) {
 
         if (!trainStopRepository.existsById(id)) {
             throw new RuntimeException("Train stop not found");

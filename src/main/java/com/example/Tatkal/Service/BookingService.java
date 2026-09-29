@@ -4,20 +4,19 @@ import com.example.Tatkal.Dto.BookingCreateDTO;
 import com.example.Tatkal.Dto.BookingDTO;
 import com.example.Tatkal.Dto.BookingResponseDTO;
 import com.example.Tatkal.Entity.Booking;
+import com.example.Tatkal.Entity.Passenger;
+import com.example.Tatkal.Entity.Payment;
 import com.example.Tatkal.Entity.Seat;
 import com.example.Tatkal.Entity.Trip;
 import com.example.Tatkal.Entity.Users;
-import com.example.Tatkal.Entity.Passenger;
-import com.example.Tatkal.Entity.Payment;
-
 import com.example.Tatkal.Repositry.BookingRepository;
+import com.example.Tatkal.Repositry.PassengerRepository;
+import com.example.Tatkal.Repositry.PaymentRepository;
 import com.example.Tatkal.Repositry.SeatRepository;
 import com.example.Tatkal.Repositry.TripRepository;
 import com.example.Tatkal.Repositry.UserRepository;
-import com.example.Tatkal.Repositry.PassengerRepository;
-import com.example.Tatkal.Repositry.PaymentRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.core.Authentication;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -37,214 +36,106 @@ public class BookingService {
     private final DTOMapperService mapperService;
     private final FareService fareService;
 
-    /*
-     * THIS TRANSACTION IS THE IMPORTANT PART.
-     *
-     * The following operations happen in ONE transaction:
-     *
-     * 1. Find user
-     * 2. Find trip
-     * 3. Lock seat
-     * 4. Change AVAILABLE -> HELD
-     * 5. Create booking
-     *
-     * If anything fails, everything rolls back.
-     */
     @Transactional
     public BookingDTO createBooking(BookingCreateDTO createDTO, String authenticatedEmail) {
+        Users user = usersRepository.findByEmail(authenticatedEmail.trim().toLowerCase())
+                .orElseThrow(() -> new RuntimeException("User not found"));
 
-        // -----------------------------------------
-        // 1. Validate user
-        // -----------------------------------------
-
-        Users user = usersRepository.findByEmail(authenticatedEmail)
-                .orElseThrow(() ->
-                        new RuntimeException(
-                                "User not found"
-                        )
-                );
-        long activeHolds = bookingRepository.countByUserIdAndStatus(user.getId(), "HELD");
-        if (activeHolds >= 2) { // pick a number and put it in application.properties
+        if (bookingRepository.countByUserIdAndStatus(user.getId(), "HELD") >= 2) {
             throw new RuntimeException("Too many active holds — pay or cancel one first");
         }
 
-
-        // -----------------------------------------
-        // 2. Validate trip
-        // -----------------------------------------
-
         Trip trip = tripRepository.findById(createDTO.getTripId())
-                .orElseThrow(() ->
-                        new RuntimeException(
-                                "Trip not found"
-                        )
-                );
-
-        // -----------------------------------------
-        // 3. Validate route
-        // -----------------------------------------
+                .orElseThrow(() -> new RuntimeException("Trip not found"));
 
         if (createDTO.getFromSeq() >= createDTO.getToSeq()) {
-            throw new RuntimeException(
-                    "Invalid journey route"
-            );
+            throw new RuntimeException("Invalid journey route");
         }
 
-        // -----------------------------------------
-        // 4. LOCK AVAILABLE SEAT
-        // -----------------------------------------
+        List<Long> candidateSeatIds = seatRepository.findAvailableSeatIds(
+                trip.getId(),
+                createDTO.getClassCode(),
+                PageRequest.of(0, 20)
+        );
 
-        List<Seat> availableSeats =
-                seatRepository
-                        .findAvailableSeatsForTripAndClassForUpdate(
-                                createDTO.getTripId(),
-                                createDTO.getClassCode()
-                        );
-
-        if (availableSeats.isEmpty()) {
-            throw new RuntimeException(
-                    "No seats available"
-            );
+        Long seatId = candidateSeatIds.stream().findFirst().orElseThrow(() -> new RuntimeException("No seats available"));
+        int claimed = seatRepository.claimSeat(seatId);
+        if (claimed == 0) {
+            throw new RuntimeException("No seats available");
         }
 
-        /*
-         * Because this entity is locked using
-         * PESSIMISTIC_WRITE, another transaction
-         * cannot simultaneously modify this seat.
-         */
-        Seat seat = availableSeats.get(0);
-
-        // -----------------------------------------
-        // 5. HOLD SEAT
-        // -----------------------------------------
-
-        seat.setStatus("HELD");
-
-        seatRepository.save(seat);
-
-        // -----------------------------------------
-        // 6. CREATE BOOKING
-        // -----------------------------------------
+        Seat seat = seatRepository.findById(seatId)
+                .orElseThrow(() -> new RuntimeException("Seat not found"));
 
         Booking booking = new Booking();
-
         booking.setUser(user);
         booking.setTrip(trip);
         booking.setSeat(seat);
-
         booking.setFromSeq(createDTO.getFromSeq());
         booking.setToSeq(createDTO.getToSeq());
-
-        long serverFarePaise = fareService.calculateFarePaise(
-                         createDTO.getClassCode(), createDTO.getFromSeq(), createDTO.getToSeq());
-        booking.setAmountPaise(serverFarePaise);
-
+        booking.setAmountPaise(fareService.calculateFarePaise(createDTO.getClassCode(), createDTO.getFromSeq(), createDTO.getToSeq()));
         booking.setStatus("HELD");
-
-        booking.setCreatedAt(
-                OffsetDateTime.now()
-        );
-
-        booking.setHoldExpiresAt(OffsetDateTime.now().plusMinutes(10));
+        OffsetDateTime now = OffsetDateTime.now();
+        booking.setCreatedAt(now);
+        booking.setHoldExpiresAt(now.plusMinutes(10));
 
         Booking savedBooking = bookingRepository.save(booking);
         return mapperService.toBookingDTO(savedBooking);
     }
 
-    // -----------------------------------------
-    // GET BOOKING
-    // -----------------------------------------
-
-        @Transactional(readOnly = true)
-        public List<BookingDTO> getAllBookings() {
-                return mapperService.toBookingDTOList(bookingRepository.findAll());
-        }
+    @Transactional(readOnly = true)
+    public List<BookingDTO> getAllBookings() {
+        return mapperService.toBookingDTOList(bookingRepository.findAll());
+    }
 
     @Transactional(readOnly = true)
     public BookingResponseDTO getBooking(Long bookingId) {
-
         Booking booking = bookingRepository.findById(bookingId)
-                .orElseThrow(() ->
-                        new RuntimeException(
-                                "Booking not found"
-                        )
-                );
+                .orElseThrow(() -> new RuntimeException("Booking not found"));
 
         List<Passenger> passengers = passengerRepository.findByBookingId(bookingId);
         List<Payment> payments = paymentRepository.findByBookingId(bookingId);
-
         return mapperService.toBookingResponseDTO(booking, passengers, payments);
     }
 
-    // -----------------------------------------
-    // USER BOOKINGS
-    // -----------------------------------------
-
     @Transactional(readOnly = true)
     public List<BookingDTO> getUserBookings(Long userId) {
-
-        List<Booking> bookings = bookingRepository.findByUserId(userId);
-        return mapperService.toBookingDTOList(bookings);
+        return mapperService.toBookingDTOList(bookingRepository.findByUserId(userId));
     }
-
-    // -----------------------------------------
-    // TRIP BOOKINGS
-    // -----------------------------------------
 
     @Transactional(readOnly = true)
     public List<BookingDTO> getTripBookings(Long tripId) {
-
-        List<Booking> bookings = bookingRepository.findByTripId(tripId);
-        return mapperService.toBookingDTOList(bookings);
+        return mapperService.toBookingDTOList(bookingRepository.findByTripId(tripId));
     }
-
-    private void requireOwnerOrAdmin(Booking booking, Authentication authentication) {
-        boolean isOwner = booking.getUser().getEmail().equals(authentication.getName());
-        boolean isAdmin = authentication.getAuthorities().stream()
-                .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
-        if (!isOwner && !isAdmin) {
-            throw new SecurityException("Not authorized to modify this booking");
-        }
-    }
-    // -----------------------------------------
-    // CANCEL BOOKING
-    // -----------------------------------------
 
     @Transactional
     public BookingDTO cancelBooking(Long bookingId) {
-
-        Booking booking =
-                bookingRepository.findById(bookingId)
-                        .orElseThrow(() ->
-                                new RuntimeException(
-                                        "Booking not found"
-                                )
-                        );
+        Booking booking = bookingRepository.findById(bookingId)
+                .orElseThrow(() -> new RuntimeException("Booking not found"));
 
         if ("CANCELLED".equals(booking.getStatus())) {
-            throw new RuntimeException(
-                    "Booking already cancelled"
-            );
+            throw new RuntimeException("Booking already cancelled");
+        }
+
+        Seat seat = booking.getSeat();
+        if (bookingRepository.cancelIfActive(bookingId) == 0) {
+            throw new RuntimeException("Booking is already cancelled or expired");
+        }
+        if (seat != null) {
+            seatRepository.releaseSeat(seat.getId());
         }
 
         if ("CONFIRMED".equals(booking.getStatus())) {
-
-            // Refund logic goes here.
-
+            paymentRepository.findByBookingId(bookingId).forEach(payment -> {
+                if ("SUCCESS".equals(payment.getStatus())) {
+                    payment.setStatus("REFUND_REQUIRED");
+                    paymentRepository.save(payment);
+                }
+            });
         }
 
-        // Release seat
-        Seat seat = booking.getSeat();
-
-        if (seat != null) {
-            seat.setStatus("AVAILABLE");
-            seatRepository.save(seat);
-        }
-
-        booking.setStatus("CANCELLED");
-
-        Booking savedBooking = bookingRepository.save(booking);
-        return mapperService.toBookingDTO(savedBooking);
+        return mapperService.toBookingDTO(bookingRepository.findById(bookingId)
+                .orElseThrow(() -> new RuntimeException("Booking not found")));
     }
 
     @Transactional
@@ -256,9 +147,7 @@ public class BookingService {
             throw new RuntimeException("Booking is not in HELD state");
         }
 
-        boolean paid = paymentRepository.findByBookingId(bookingId).stream()
-                .anyMatch(p -> "SUCCESS".equals(p.getStatus()));
-        if (!paid) {
+        if (paymentRepository.findByBookingId(bookingId).stream().noneMatch(p -> "SUCCESS".equals(p.getStatus()))) {
             throw new RuntimeException("Payment not completed for this booking");
         }
 
@@ -266,10 +155,14 @@ public class BookingService {
         if (seat == null) throw new RuntimeException("No seat assigned to booking");
         if (!"HELD".equals(seat.getStatus())) throw new RuntimeException("Seat is not held");
 
-        seat.setStatus("BOOKED");
-        booking.setStatus("CONFIRMED");
-        seatRepository.save(seat);
-        return mapperService.toBookingDTO(bookingRepository.save(booking));
+        int rows = bookingRepository.confirmIfHeld(bookingId);
+        if (rows == 0) {
+            throw new RuntimeException("Booking is no longer held");
+        }
+
+        seatRepository.markBooked(seat.getId());
+        return mapperService.toBookingDTO(bookingRepository.findById(bookingId)
+                .orElseThrow(() -> new RuntimeException("Booking not found")));
     }
 }
 

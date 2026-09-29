@@ -25,8 +25,8 @@ public interface TrainRepository
       AND trip.travelDate = :date
 """)
     List<Train> searchTrains(
-            @Param("from") Long from,
-            @Param("to") Long to,
+            @Param("from") String from,
+            @Param("to") String to,
             @Param("date") LocalDate date
     );
 

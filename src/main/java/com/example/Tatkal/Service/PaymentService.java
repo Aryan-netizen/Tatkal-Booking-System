@@ -7,6 +7,7 @@ import com.example.Tatkal.Entity.Payment;
 import com.example.Tatkal.Entity.Seat;
 import com.example.Tatkal.Repositry.BookingRepository;
 import com.example.Tatkal.Repositry.PaymentRepository;
+import com.example.Tatkal.Repositry.SeatRepository;
 import com.razorpay.Order;
 import com.razorpay.RazorpayClient;
 import com.razorpay.RazorpayException;
@@ -28,6 +29,7 @@ public class PaymentService {
     private final DTOMapperService mapperService;
     private final RazorpayClient razorpayClient;
     private final WebhookSignatureVerifier signatureVerifier;
+    private final SeatRepository seatRepository;
 
     // src/main/java/com/example/Tatkal/Service/PaymentService.java
     @Transactional
@@ -65,6 +67,29 @@ public class PaymentService {
         // which does this as one atomic conditional update instead of a blind write.
         confirmBookingIfHeld(booking.getId());
     }
+
+    // src/main/java/com/example/Tatkal/Service/PaymentService.java
+    @Transactional
+    public void confirmBookingIfHeld(Long bookingId) {
+        int rows = bookingRepository.confirmIfHeld(bookingId);
+        if (rows == 0) {
+            // Booking was no longer HELD (cancelled, expired, or already confirmed).
+            // Refund the payment — do NOT touch the seat.
+            Payment payment = paymentRepository.findFirstByBookingIdOrderByCreatedAtDesc(bookingId)
+                    .orElseThrow();
+            payment.setStatus("REFUND_REQUIRED");
+            paymentRepository.save(payment);
+            return;
+        }
+
+        Booking booking = bookingRepository.findById(bookingId).orElseThrow();
+        Seat seat = booking.getSeat();
+        if (seat != null) {
+            seat.setStatus("BOOKED");
+            seatRepository.save(seat);
+        }
+    }
+
 
 
     @Transactional

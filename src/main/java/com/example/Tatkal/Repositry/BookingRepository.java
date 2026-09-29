@@ -4,7 +4,9 @@ import com.example.Tatkal.Entity.Booking;
 import com.example.Tatkal.Entity.Users;
 import com.example.Tatkal.Entity.Trip;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 import java.util.List;
 
@@ -33,4 +35,12 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
     List<Long> findExpiredHeldBookingIdsForUpdate();
 
     long countByUserIdAndStatus(Long userId, String status);
+
+    @Modifying
+    @Query("UPDATE Booking b SET b.status = 'CONFIRMED' WHERE b.id = :id AND b.status = 'HELD'")
+    int confirmIfHeld(@Param("id") Long id);
+
+    @Modifying
+    @Query("UPDATE Booking b SET b.status = 'CANCELLED' WHERE b.id = :id AND b.status IN ('HELD','CONFIRMED')")
+    int cancelIfActive(@Param("id") Long id);
 }

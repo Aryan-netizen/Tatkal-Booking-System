@@ -48,6 +48,9 @@ public class Booking {
     @Column(nullable = false)
     private OffsetDateTime createdAt;
 
+    @jakarta.persistence.Version
+     private Long version;
+
     @Column
     private OffsetDateTime holdExpiresAt;
 

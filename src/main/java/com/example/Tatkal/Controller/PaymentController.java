@@ -2,6 +2,7 @@ package com.example.Tatkal.Controller;
 
 import com.example.Tatkal.Dto.PaymentDTO;
 import com.example.Tatkal.Service.PaymentService;
+import com.razorpay.RazorpayException;
 import com.razorpay.Utils;
 import jakarta.validation.Valid;
 import org.json.JSONObject;
@@ -40,7 +41,7 @@ public class PaymentController {
     @PostMapping("/bookings/{bookingId}/payment")
     public ResponseEntity<PaymentDTO> createPayment(
             @PathVariable Long bookingId,
-            @RequestBody PaymentCreateRequest request) {
+            @RequestBody PaymentCreateRequest request) throws RazorpayException {
 
         PaymentDTO createdPayment = paymentService.createPayment(bookingId, request.getAmountPaise());
         return new ResponseEntity<>(createdPayment, HttpStatus.CREATED);

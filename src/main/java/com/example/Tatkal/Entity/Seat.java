@@ -45,6 +45,9 @@ public class Seat {
     @JoinColumn(name = "coach_id", nullable = false)
     private Coach coach;
 
+    @jakarta.persistence.Version
+    private Long version;
+
     @OneToMany(mappedBy = "seat")
     private Set<Booking> seatBookings = new HashSet<>();
 

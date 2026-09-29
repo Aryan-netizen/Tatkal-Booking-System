@@ -16,8 +16,28 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
+ import org.springframework.dao.OptimisticLockingFailureException;
+ import org.springframework.dao.PessimisticLockingFailureException;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
+
+
+    @ExceptionHandler(OptimisticLockingFailureException.class)
+    public ResponseEntity<ApiErrorResponse> handleOptimisticLock(
+            OptimisticLockingFailureException exception, HttpServletRequest request) {
+        return buildResponse(HttpStatus.CONFLICT, "Conflict",
+                "This booking was changed by another request. Please retry.", request, Map.of());
+    }
+    @ExceptionHandler(PessimisticLockingFailureException.class)
+    public ResponseEntity<ApiErrorResponse> handleLockTimeout(
+            PessimisticLockingFailureException exception, HttpServletRequest request) {
+        return buildResponse(HttpStatus.SERVICE_UNAVAILABLE, "Try again",
+                "The system is busy. Please retry in a moment.", request, Map.of());
+    }
+    @ExceptionHandler(SecurityException.class)
+    public ResponseEntity<ApiErrorResponse> handleSecurity(SecurityException exception, HttpServletRequest request) {
+        return buildResponse(HttpStatus.FORBIDDEN, "Forbidden", exception.getMessage(), request, Map.of());
+    }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ApiErrorResponse> handleValidation(
@@ -68,18 +88,7 @@ public class GlobalExceptionHandler {
                 Map.of());
     }
 
-    @ExceptionHandler(MethodArgumentTypeMismatchException.class)
-    public ResponseEntity<ApiErrorResponse> handleTypeMismatch(
-            MethodArgumentTypeMismatchException exception,
-            HttpServletRequest request) {
-        String type = exception.getRequiredType() == null
-                ? "value"
-                : exception.getRequiredType().getSimpleName();
-        String message = "Parameter '" + exception.getName()
-                + "' must be a valid " + type + ".";
-        return buildResponse(HttpStatus.BAD_REQUEST, "Invalid parameter", message,
-                request, Map.of());
-    }
+
 
     @ExceptionHandler(DataIntegrityViolationException.class)
     public ResponseEntity<ApiErrorResponse> handleDataIntegrity(
